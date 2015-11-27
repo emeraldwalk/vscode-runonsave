@@ -7,8 +7,17 @@
         "color": "#5c2d91",
         "theme": "light"
     },
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"publisher": "emeraldwalk",
+	"license": "See LICENSE file",
+	"homepage": "https://github.com/emeraldwalk/vscode-onsave/blob/master/README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/emeraldwalk/vscode-onsave.git"
+    },
+	"bugs": {
+        "url": "https://github.com/emeraldwalk/vscode-onsave/issues"
+    },
 	"engines": {
 		"vscode": "^0.10.1"
 	},

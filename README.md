@@ -52,3 +52,6 @@ Commands support placeholders similar to tasks.json.
 * ${fileDirname}: directory name of saved file
 * ${fileExtname}: extension (including .) of saved file
 * ${cwd}: current working directory
+
+## License
+[Apache](https://github.com/emeraldwalk/vscode-onsave/blob/master/LICENSE)
