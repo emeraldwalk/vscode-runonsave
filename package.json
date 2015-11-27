@@ -1,6 +1,6 @@
 {
 	"name": "OnSave",
-	"displayName": "Run commands on save",
+	"displayName": "Run on Save",
 	"description": "Run commands when a file is saved in vscode.",
 	"icon": "images/onsave-icon.svg",
 	"galleryBanner": {
