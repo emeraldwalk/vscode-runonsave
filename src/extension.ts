@@ -7,6 +7,11 @@ export function activate(context: vscode.ExtensionContext): void {
 	var extension = new RunOnSaveExtension(context);
 	extension.showStatusMessage();
 
+	vscode.workspace.onDidChangeConfiguration(() => {
+		vscode.window.showInformationMessage('Run On Save: Reloading config.');
+		extension.loadConfig();
+	});
+
 	vscode.commands.registerCommand('extension.emeraldwalk.enableRunOnSave', () => {
 		extension.isEnabled = true;
 	});
@@ -37,8 +42,8 @@ class RunOnSaveExtension {
 
 	constructor(context: vscode.ExtensionContext) {
 		this._context = context;
-		this._config = <IConfig><any>vscode.workspace.getConfiguration('emeraldwalk.runonsave');
 		this._outputChannel = vscode.window.createOutputChannel('Run On Save');
+		this.loadConfig();
 	}
 
 	/** Recursive call to run commands. */
@@ -73,24 +78,33 @@ class RunOnSaveExtension {
 		this.showStatusMessage();
 	}
 
+	public get commands(): Array<ICommand> {
+		return this._config.commands || [];
+	}
+
+	public loadConfig(): void {
+		this._config = <IConfig><any>vscode.workspace.getConfiguration('emeraldwalk.runonsave');
+	}
+
 	public showStatusMessage(message?: string): void {
 		message = message || `Run On Save ${this.isEnabled ? 'enabled': 'disabled'}.`;
 		this._outputChannel.appendLine(message);
 		vscode.window.setStatusBarMessage(message);
+		if(this.isEnabled && this.commands.length === 0) {
+			vscode.window.showInformationMessage('Run On Save: No commands configured. Please configure user or workspace settings or disable \'Run On Save\' extension.');
+		}
 	}
 
 	public runCommands(document: vscode.TextDocument): void {
-		if(!this.isEnabled) {
+		if(!this.isEnabled || this.commands.length === 0) {
 			this.showStatusMessage();
 			return;
 		}
 
-		var commandConfigs = (this._config.commands || [])
+		var commandConfigs = this.commands
 			.filter(cfg => new RegExp(cfg.match).test(document.fileName));
 
 		if (commandConfigs.length === 0) {
-			this._outputChannel.show();
-			this.showStatusMessage('No run on save commands configured.');
 			return;
 		}
 
