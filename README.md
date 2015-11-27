@@ -1,4 +1,4 @@
-# On Save for Visual Studio Code
+# Run On Save for Visual Studio Code
 This extension allows configuring commands that get run whenever a file is saved in vscode.
 
 NOTE: Commands only get run when saving an existing file. Creating new files, and Save as... don't trigger the commands.
@@ -9,7 +9,7 @@ NOTE: Commands only get run when saving an existing file. Creating new files, an
 * Sync and async support
 
 ## Configuration
-Add "emeraldwalk.onsave" configuration to user or workspace settings.
+Add "emeraldwalk.runonsave" configuration to user or workspace settings.
 * "commands" - array of commands that will be run whenever a file is saved.
   * "match" - a regex for matching which files to run commands on
   * "cmd" - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
@@ -20,7 +20,7 @@ This sample configuration will run echo statements including the saved file path
 In this sample, the first command is async, so the second command will get executed immediately even if first hasn't completed.
 Since the second isn't async, the third command won't execute until the second is complete.
 
-    "emeraldwalk.onsave": {
+    "emeraldwalk.runonsave": {
 		"commands": [
 			{
 				"match": ".*",
@@ -54,4 +54,4 @@ Commands support placeholders similar to tasks.json.
 * ${cwd}: current working directory
 
 ## License
-[Apache](https://github.com/emeraldwalk/vscode-onsave/blob/master/LICENSE)
+[Apache](https://github.com/emeraldwalk/vscode-runonsave/blob/master/LICENSE)

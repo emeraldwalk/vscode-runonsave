@@ -1,22 +1,22 @@
 {
-	"name": "OnSave",
+	"name": "RunOnSave",
 	"displayName": "Run on Save",
 	"description": "Run commands when a file is saved in vscode.",
-	"icon": "images/onsave-icon.svg",
+	"icon": "images/save-icon.svg",
 	"galleryBanner": {
         "color": "#5c2d91",
         "theme": "light"
     },
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"publisher": "emeraldwalk",
 	"license": "See LICENSE file",
-	"homepage": "https://github.com/emeraldwalk/vscode-onsave/blob/master/README.md",
+	"homepage": "https://github.com/emeraldwalk/vscode-runonsave/blob/master/README.md",
     "repository": {
         "type": "git",
-        "url": "https://github.com/emeraldwalk/vscode-onsave.git"
+        "url": "https://github.com/emeraldwalk/vscode-runonsave.git"
     },
 	"bugs": {
-        "url": "https://github.com/emeraldwalk/vscode-onsave/issues"
+        "url": "https://github.com/emeraldwalk/vscode-runonsave/issues"
     },
 	"engines": {
 		"vscode": "^0.10.1"
@@ -30,17 +30,17 @@
 	"main": "./out/src/extension",
 	"contributes": {
 		"commands": [{
-			"command": "extension.emeraldwalk.enableOnSave",
-			"title": "On Save: Enable"
+			"command": "extension.emeraldwalk.enableRunOnSave",
+			"title": "Run On Save: Enable"
 		},{
-			"command": "extension.emeraldwalk.disableOnSave",
-			"title": "On Save: Disable"
+			"command": "extension.emeraldwalk.disableRunOnSave",
+			"title": "Run On Save: Disable"
 		}],
 		"configuration": {
-			"title": "On save command configuration.",
+			"title": "Run On Save command configuration.",
 			"type": "object",
 			"properties": {
-				"emeraldwalk.onsave": {
+				"emeraldwalk.runonsave": {
 					"type": "object",
 					"properties": {
 						"commands": {

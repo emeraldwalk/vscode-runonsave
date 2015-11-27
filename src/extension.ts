@@ -4,14 +4,14 @@ import {exec} from 'child_process';
 
 export function activate(context: vscode.ExtensionContext): void {
 
-	var extension = new OnSaveExtension(context);
+	var extension = new RunOnSaveExtension(context);
 	extension.showStatusMessage();
 
-	vscode.commands.registerCommand('extension.emeraldwalk.enableOnSave', () => {
+	vscode.commands.registerCommand('extension.emeraldwalk.enableRunOnSave', () => {
 		extension.isEnabled = true;
 	});
 
-	vscode.commands.registerCommand('extension.emeraldwalk.disableOnSave', () => {
+	vscode.commands.registerCommand('extension.emeraldwalk.disableRunOnSave', () => {
 		extension.isEnabled = false;
 	});
 
@@ -30,15 +30,15 @@ interface IConfig {
 	commands: Array<ICommand>;
 }
 
-class OnSaveExtension {
+class RunOnSaveExtension {
 	private _outputChannel: vscode.OutputChannel;
 	private _context: vscode.ExtensionContext;
 	private _config: IConfig;
 
 	constructor(context: vscode.ExtensionContext) {
 		this._context = context;
-		this._config = <IConfig><any>vscode.workspace.getConfiguration('emeraldwalk.onsave');
-		this._outputChannel = vscode.window.createOutputChannel('On Save');
+		this._config = <IConfig><any>vscode.workspace.getConfiguration('emeraldwalk.runonsave');
+		this._outputChannel = vscode.window.createOutputChannel('Run On Save');
 	}
 
 	/** Recursive call to run commands. */
@@ -74,7 +74,7 @@ class OnSaveExtension {
 	}
 
 	public showStatusMessage(message?: string): void {
-		message = message || `On save ${this.isEnabled ? 'enabled': 'disabled'}.`;
+		message = message || `Run On Save ${this.isEnabled ? 'enabled': 'disabled'}.`;
 		this._outputChannel.appendLine(message);
 		vscode.window.setStatusBarMessage(message);
 	}
@@ -90,7 +90,7 @@ class OnSaveExtension {
 
 		if (commandConfigs.length === 0) {
 			this._outputChannel.show();
-			this.showStatusMessage('No on save commands configured.');
+			this.showStatusMessage('No run on save commands configured.');
 			return;
 		}
 
