@@ -1,0 +1,68 @@
+{
+	"name": "OnSave",
+	"displayName": "Run commands on save",
+	"description": "Run commands when a file is saved in vscode.",
+	"icon": "images/onsave-icon.svg",
+	"galleryBanner": {
+        "color": "#5c2d91",
+        "theme": "light"
+    },
+	"version": "0.0.3",
+	"publisher": "emeraldwalk",
+	"engines": {
+		"vscode": "^0.10.1"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/src/extension",
+	"contributes": {
+		"commands": [{
+			"command": "extension.emeraldwalk.enableOnSave",
+			"title": "On Save: Enable"
+		},{
+			"command": "extension.emeraldwalk.disableOnSave",
+			"title": "On Save: Disable"
+		}],
+		"configuration": {
+			"title": "On save command configuration.",
+			"type": "object",
+			"properties": {
+				"emeraldwalk.onsave": {
+					"type": "object",
+					"properties": {
+						"commands": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"match": {
+										"type": "string",
+										"description": "Regex for matching files to run commands on.",
+										"default": ".*"
+									},
+									"cmd": {
+										"type": "string",
+										"description": "Command to execute on save.",
+										"default": "echo ${file}"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
+	},
+	"devDependencies": {
+		"typescript": "^1.6.2",
+		"vscode": "0.10.x"
+	}
+}
