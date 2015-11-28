@@ -53,5 +53,9 @@ Commands support placeholders similar to tasks.json.
 * ${fileExtname}: extension (including .) of saved file
 * ${cwd}: current working directory
 
+## Links
+* [Marketplace](https://marketplace.visualstudio.com/items/emeraldwalk.RunOnSave)
+* [Source Code](https://github.com/emeraldwalk/vscode-runonsave)
+
 ## License
 [Apache](https://github.com/emeraldwalk/vscode-runonsave/blob/master/LICENSE)
