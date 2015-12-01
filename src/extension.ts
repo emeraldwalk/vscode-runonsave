@@ -122,6 +122,11 @@ class RunOnSaveExtension {
 			cmdStr = cmdStr.replace(/\${fileExtname}/g, `${path.extname(document.fileName) }`);
 			cmdStr = cmdStr.replace(/\${cwd}/g, `${process.cwd() }`);
 
+			// replace environment variables ${env.Name}
+			cmdStr = cmdStr.replace(/\${env\.([^}]+)}/g, (sub: string, envName: string) => {
+				return process.env[envName];
+			});
+
 			commands.push({
 				cmd: cmdStr,
 				isAsync: !!cfg.isAsync

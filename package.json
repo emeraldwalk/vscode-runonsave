@@ -57,6 +57,11 @@
 										"type": "string",
 										"description": "Command to execute on save.",
 										"default": "echo ${file}"
+									},
+									"isAsync": {
+										"type": "boolean",
+										"description": "Run command asynchronously.",
+										"default": false
 									}
 								}
 							}
