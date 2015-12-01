@@ -34,6 +34,10 @@ Since the second isn't async, the third command won't execute until the second i
 			{
 				"match": "\\.js$",
 				"cmd": "echo 'I am a .js file ${file}.'"
+			},
+			{
+				"match": ".*",
+				"cmd": "echo 'I am ${env.USERNAME}.'"
 			}
 		]
 	}
@@ -52,6 +56,10 @@ Commands support placeholders similar to tasks.json.
 * ${fileDirname}: directory name of saved file
 * ${fileExtname}: extension (including .) of saved file
 * ${cwd}: current working directory
+
+### Environment Variable Tokens
+
+* ${env.Name}
 
 ## Links
 * [Marketplace](https://marketplace.visualstudio.com/items/emeraldwalk.RunOnSave)
