@@ -32,6 +32,7 @@ interface ICommand {
 }
 
 interface IConfig {
+	autoClearConsole: boolean;
 	commands: Array<ICommand>;
 }
 
@@ -78,6 +79,10 @@ class RunOnSaveExtension {
 		this.showStatusMessage();
 	}
 
+	public get autoClearConsole(): boolean {
+		return !!this._config.autoClearConsole;
+	}
+
 	public get commands(): Array<ICommand> {
 		return this._config.commands || [];
 	}
@@ -96,6 +101,10 @@ class RunOnSaveExtension {
 	}
 
 	public runCommands(document: vscode.TextDocument): void {
+		if(this.autoClearConsole) {
+			this._outputChannel.clear();
+		}
+
 		if(!this.isEnabled || this.commands.length === 0) {
 			this.showStatusMessage();
 			return;

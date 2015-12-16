@@ -43,6 +43,11 @@
 				"emeraldwalk.runonsave": {
 					"type": "object",
 					"properties": {
+						"autoClearConsole": {
+							"type": "boolean",
+							"description": "Automatically clear the console on each save before running commands.",
+							"default": false
+						},
 						"commands": {
 							"type": "array",
 							"items": {
