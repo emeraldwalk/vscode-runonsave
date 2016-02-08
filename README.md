@@ -55,6 +55,7 @@ Commands support placeholders similar to tasks.json.
 * ${fileBasename}: saved file's basename
 * ${fileDirname}: directory name of saved file
 * ${fileExtname}: extension (including .) of saved file
+* ${fileBasenameNoExt}: saved file's basename without extension
 * ${cwd}: current working directory
 
 ### Environment Variable Tokens

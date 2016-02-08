@@ -27,6 +27,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
 interface ICommand {
 	match?: string;
+	notMatch?: string;
 	cmd: string;
 	isAsync: boolean;
 }
@@ -110,8 +111,22 @@ class RunOnSaveExtension {
 			return;
 		}
 
+		var match = (pattern: string) => pattern && pattern.length > 0 && new RegExp(pattern).test(document.fileName);
+
 		var commandConfigs = this.commands
-			.filter(cfg => new RegExp(cfg.match).test(document.fileName));
+			.filter(cfg => {
+				var matchPattern = cfg.match || '';
+				var negatePattern = cfg.notMatch || '';
+
+				// if no match pattern was provided, or if match pattern succeeds
+				var isMatch = matchPattern.length === 0 || match(matchPattern);
+
+				// negation has to be explicitly provided
+				var isNegate = negatePattern.length > 0 && match(negatePattern);
+
+				// negation wins over match
+				return !isNegate && isMatch;
+			});
 
 		if (commandConfigs.length === 0) {
 			return;
@@ -124,12 +139,15 @@ class RunOnSaveExtension {
 		for (let cfg of commandConfigs) {
 			var cmdStr = cfg.cmd;
 
+			var extName = path.extname(document.fileName);
+
 			cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
 			cmdStr = cmdStr.replace(/\${workspaceRoot}/g, `${vscode.workspace.rootPath}`);
-			cmdStr = cmdStr.replace(/\${fileBasename}/g, `${path.basename(document.fileName) }`);
-			cmdStr = cmdStr.replace(/\${fileDirname}/g, `${path.dirname(document.fileName) }`);
-			cmdStr = cmdStr.replace(/\${fileExtname}/g, `${path.extname(document.fileName) }`);
-			cmdStr = cmdStr.replace(/\${cwd}/g, `${process.cwd() }`);
+			cmdStr = cmdStr.replace(/\${fileBasename}/g, `${path.basename(document.fileName)}`);
+			cmdStr = cmdStr.replace(/\${fileDirname}/g, `${path.dirname(document.fileName)}`);
+			cmdStr = cmdStr.replace(/\${fileExtname}/g, `${extName}`);
+			cmdStr = cmdStr.replace(/\${fileBasenameNoExt}/g, `${path.basename(document.fileName, extName)}`);
+			cmdStr = cmdStr.replace(/\${cwd}/g, `${process.cwd()}`);
 
 			// replace environment variables ${env.Name}
 			cmdStr = cmdStr.replace(/\${env\.([^}]+)}/g, (sub: string, envName: string) => {
