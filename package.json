@@ -48,6 +48,10 @@
 							"description": "Automatically clear the console on each save before running commands.",
 							"default": false
 						},
+						"shell": {
+							"type": "string",
+							"description": "Specify shell path to run commands (gets used in options arg passed to child_process.exec)."
+						},
 						"commands": {
 							"type": "array",
 							"items": {
