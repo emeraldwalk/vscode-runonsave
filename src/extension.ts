@@ -8,8 +8,9 @@ export function activate(context: vscode.ExtensionContext): void {
 	extension.showStatusMessage();
 
 	vscode.workspace.onDidChangeConfiguration(() => {
-		extension.showStatusMessage('Run On Save: Reloading config.');
+		let disposeStatus = extension.showStatusMessage('Run On Save: Reloading config.');
 		extension.loadConfig();
+		disposeStatus.dispose();
 	});
 
 	vscode.commands.registerCommand('extension.emeraldwalk.enableRunOnSave', () => {
@@ -103,13 +104,19 @@ class RunOnSaveExtension {
 		this._config = <IConfig><any>vscode.workspace.getConfiguration('emeraldwalk.runonsave');
 	}
 
-	public showStatusMessage(message?: string): void {
+	/**
+	 * Show message in status bar and output channel.
+	 * Return a disposable to remove status bar message.
+	 */
+	public showStatusMessage(message?: string): vscode.Disposable {
 		message = message || `Run On Save ${this.isEnabled ? 'enabled': 'disabled'}.`;
 		this._outputChannel.appendLine(message);
-		vscode.window.setStatusBarMessage(message);
+
 		if(this.isEnabled && this.commands.length === 0) {
 			vscode.window.showInformationMessage('Run On Save: No commands configured. Please configure user or workspace settings or disable \'Run On Save\' extension.');
 		}
+
+		return vscode.window.setStatusBarMessage(message);
 	}
 
 	public runCommands(document: vscode.TextDocument): void {
