@@ -33,6 +33,7 @@ interface ICommand {
 }
 
 interface IConfig {
+	shell: string;
 	autoClearConsole: boolean;
 	commands: Array<ICommand>;
 }
@@ -55,7 +56,7 @@ class RunOnSaveExtension {
 
 			this.showStatusMessage(`*** cmd start: ${cfg.cmd}`);
 
-			var child = exec(cfg.cmd);
+			var child = exec(cfg.cmd, this._execOption);
 			child.stdout.on('data', data => this._outputChannel.append(data));
 			child.stderr.on('data', data => this._outputChannel.append(data));
 			child.on('exit', (e) => {
@@ -72,12 +73,22 @@ class RunOnSaveExtension {
 		}
 	}
 
+	private get _execOption(): {shell: string} {
+		if (this.shell) {
+			return {shell: this.shell};
+		}
+	}
+
 	public get isEnabled(): boolean {
 		return !!this._context.globalState.get('isEnabled', true);
 	}
 	public set isEnabled(value: boolean) {
 		this._context.globalState.update('isEnabled', value);
 		this.showStatusMessage();
+	}
+
+	public get shell(): string {
+		return this._config.shell;
 	}
 
 	public get autoClearConsole(): boolean {
