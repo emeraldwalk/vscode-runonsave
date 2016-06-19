@@ -56,7 +56,7 @@ class RunOnSaveExtension {
 
 			this.showStatusMessage(`*** cmd start: ${cfg.cmd}`);
 
-			var child = exec(cfg.cmd, this.execOption);
+			var child = exec(cfg.cmd, this._execOption);
 			child.stdout.on('data', data => this._outputChannel.append(data));
 			child.stderr.on('data', data => this._outputChannel.append(data));
 			child.on('exit', (e) => {
@@ -73,13 +73,12 @@ class RunOnSaveExtension {
 		}
 	}
 
-	private get execOption(): any {
+	private get _execOption(): {shell: string} {
 		if (this.shell) {
 			return {shell: this.shell};
-		}    
-		return null;
+		}
 	}
-    
+
 	public get isEnabled(): boolean {
 		return !!this._context.globalState.get('isEnabled', true);
 	}
@@ -89,7 +88,7 @@ class RunOnSaveExtension {
 	}
 
 	public get shell(): string {
-		return this._config.shell;    
+		return this._config.shell;
 	}
 
 	public get autoClearConsole(): boolean {
