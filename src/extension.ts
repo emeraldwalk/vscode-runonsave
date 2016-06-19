@@ -8,7 +8,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	extension.showStatusMessage();
 
 	vscode.workspace.onDidChangeConfiguration(() => {
-		vscode.window.showInformationMessage('Run On Save: Reloading config.');
+		extension.showStatusMessage('Run On Save: Reloading config.');
 		extension.loadConfig();
 	});
 
