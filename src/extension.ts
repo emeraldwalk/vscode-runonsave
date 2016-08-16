@@ -55,7 +55,7 @@ class RunOnSaveExtension {
 		if (commands.length) {
 			var cfg = commands.shift();
 
-			this.showStatusMessage(`*** cmd start: ${cfg.cmd}`);
+			this.showOutputMessage(`*** cmd start: ${cfg.cmd}`);
 
 			var child = exec(cfg.cmd, this._execOption);
 			child.stdout.on('data', data => this._outputChannel.append(data));
@@ -71,6 +71,11 @@ class RunOnSaveExtension {
 			if (cfg.isAsync) {
 				this._runCommands(commands);
 			}
+		}
+		else {
+			// NOTE: This technically just marks the end of commands starting.
+			// There could still be asyc commands running.
+			this.showStatusMessage('Run on Save done.');
 		}
 	}
 
