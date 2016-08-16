@@ -5,7 +5,7 @@ import {exec} from 'child_process';
 export function activate(context: vscode.ExtensionContext): void {
 
 	var extension = new RunOnSaveExtension(context);
-	extension.showStatusMessage();
+	extension.showOutputMessage();
 
 	vscode.workspace.onDidChangeConfiguration(() => {
 		let disposeStatus = extension.showStatusMessage('Run On Save: Reloading config.');
@@ -85,7 +85,7 @@ class RunOnSaveExtension {
 	}
 	public set isEnabled(value: boolean) {
 		this._context.globalState.update('isEnabled', value);
-		this.showStatusMessage();
+		this.showOutputMessage();
 	}
 
 	public get shell(): string {
@@ -105,17 +105,19 @@ class RunOnSaveExtension {
 	}
 
 	/**
+	 * Show message in output channel
+	 */
+	public showOutputMessage(message?: string): void {
+		message = message || `Run On Save ${this.isEnabled ? 'enabled': 'disabled'}.`;
+		this._outputChannel.appendLine(message);
+	}
+
+	/**
 	 * Show message in status bar and output channel.
 	 * Return a disposable to remove status bar message.
 	 */
-	public showStatusMessage(message?: string): vscode.Disposable {
-		message = message || `Run On Save ${this.isEnabled ? 'enabled': 'disabled'}.`;
-		this._outputChannel.appendLine(message);
-
-		if(this.isEnabled && this.commands.length === 0) {
-			vscode.window.showInformationMessage('Run On Save: No commands configured. Please configure user or workspace settings or disable \'Run On Save\' extension.');
-		}
-
+	public showStatusMessage(message: string): vscode.Disposable {
+		this.showOutputMessage(message);
 		return vscode.window.setStatusBarMessage(message);
 	}
 
@@ -125,7 +127,7 @@ class RunOnSaveExtension {
 		}
 
 		if(!this.isEnabled || this.commands.length === 0) {
-			this.showStatusMessage();
+			this.showOutputMessage();
 			return;
 		}
 
