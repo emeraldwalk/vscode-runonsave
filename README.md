@@ -14,6 +14,7 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
 * "autoClearConsole" - (optional) clear VSCode output console every time commands run. Defaults to false.
 * "commands" - array of commands that will be run whenever a file is saved.
   * "match" - a regex for matching which files to run commands on
+  > NOTE Since this is a Regex, and also in a JSON string backslashes have to be double escaped such as when targetting folders. e.g. "match": "some\\\\\\\\folder\\\\\\\\.*"
   * "cmd" - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
   * "isAsync" (optional) - defaults to false. If true, next command will be run before this one finishes.
 
