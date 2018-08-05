@@ -2,7 +2,7 @@
 	"name": "RunOnSave",
 	"displayName": "Run on Save",
 	"description": "Run commands when a file is saved in vscode.",
-	"icon": "images/save-icon.svg",
+	"icon": "images/save-icon.png",
 	"galleryBanner": {
 		"color": "#5c2d91",
 		"theme": "light"
