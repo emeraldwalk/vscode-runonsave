@@ -9,7 +9,7 @@
 	},
 	"version": "0.0.18",
 	"publisher": "emeraldwalk",
-	"license": "See LICENSE file",
+	"license": "Apache-2.0",
 	"homepage": "https://github.com/emeraldwalk/vscode-runonsave/blob/master/README.md",
 	"repository": {
 		"type": "git",
@@ -94,11 +94,10 @@
 		"postinstall": "node ./node_modules/vscode/bin/install"
 	},
 	"devDependencies": {
+		"@types/node": "^10.12.21",
 		"@types/mocha": "^5.2.5",
-		"typescript": "^3.0.1",
-		"vscode": "^1.1.18"
+		"typescript": "^3.3.1",
+		"vscode": "^1.1.28"
 	},
-	"dependencies": {
-		"@types/node": "^10.5.6"
-	}
+	"dependencies": {}
 }
