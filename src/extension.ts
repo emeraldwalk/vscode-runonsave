@@ -61,7 +61,7 @@ class RunOnSaveExtension {
 			child.stdout.on('data', data => this._outputChannel.append(data));
 			child.stderr.on('data', data => this._outputChannel.append(data));
 			child.on('error', (e) => {
-				this.showOutputMessage(e);
+				this.showOutputMessage(e.message);
 			});
 			child.on('exit', (e) => {
 				// if sync
@@ -82,10 +82,10 @@ class RunOnSaveExtension {
 		}
 	}
 
-	private get _execOption(): {shell: string} {
+	private get _execOption(): {shell: string, cwd: string} {
 		return {
 			shell: this.shell,
-			cwd: vscode.workspace.rootPath
+			cwd: vscode.workspace.rootPath,
 		};
 	}
 
