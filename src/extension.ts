@@ -60,6 +60,9 @@ class RunOnSaveExtension {
 			var child = exec(cfg.cmd, this._execOption);
 			child.stdout.on('data', data => this._outputChannel.append(data));
 			child.stderr.on('data', data => this._outputChannel.append(data));
+			child.on('error', (e) => {
+				this.showOutputMessage(e.message);
+			});
 			child.on('exit', (e) => {
 				// if sync
 				if (!cfg.isAsync) {
@@ -79,10 +82,11 @@ class RunOnSaveExtension {
 		}
 	}
 
-	private get _execOption(): {shell: string} {
-		if (this.shell) {
-			return {shell: this.shell};
-		}
+	private get _execOption(): {shell: string, cwd: string} {
+		return {
+			shell: this.shell,
+			cwd: vscode.workspace.rootPath,
+		};
 	}
 
 	public get isEnabled(): boolean {
