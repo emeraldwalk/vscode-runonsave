@@ -164,14 +164,26 @@ class RunOnSaveExtension {
 		this.showStatusMessage('Running on save commands...');
 
 		// build our commands by replacing parameters with values
-		var commands: Array<ICommand> = [];
-		for (let cfg of commandConfigs) {
-			var cmdStr = cfg.cmd;
+		const commands: Array<ICommand> = [];
+		for (const cfg of commandConfigs) {
+			let cmdStr = cfg.cmd;
 
-			var extName = path.extname(document.fileName);
+			const extName = path.extname(document.fileName);
+			const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+
+			// NOTE: rootPath seems to be deprecated but seems like the best fallback so that
+			// single project workspaces still work. If I come up with a better option, I'll change it.
+			const workspaceFolderPath = workspaceFolder
+				? workspaceFolder.uri.path
+				: vscode.workspace.rootPath;
 
 			cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
-			cmdStr = cmdStr.replace(/\${workspaceRoot}/g, `${vscode.workspace.rootPath}`);
+
+			// DEPRECATED: workspaceFolder is more inline with vscode variables,
+			// but leaving old version in place for any users already using it.
+			cmdStr = cmdStr.replace(/\${workspaceRoot}/g, `${workspaceFolderPath}`);
+
+			cmdStr = cmdStr.replace(/\${workspaceFolder}/g, `${workspaceFolderPath}`);
 			cmdStr = cmdStr.replace(/\${fileBasename}/g, `${path.basename(document.fileName)}`);
 			cmdStr = cmdStr.replace(/\${fileDirname}/g, `${path.dirname(document.fileName)}`);
 			cmdStr = cmdStr.replace(/\${fileExtname}/g, `${extName}`);
