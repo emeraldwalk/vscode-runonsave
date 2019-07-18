@@ -187,6 +187,10 @@ class RunOnSaveExtension {
 
 			const extName = path.extname(document.fileName);
 			const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
+			const relativeFile = path.relative(
+				workspaceFolderPath,
+				document.uri.path
+			);
 
 			cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
 
@@ -199,6 +203,7 @@ class RunOnSaveExtension {
 			cmdStr = cmdStr.replace(/\${fileDirname}/g, `${path.dirname(document.fileName)}`);
 			cmdStr = cmdStr.replace(/\${fileExtname}/g, `${extName}`);
 			cmdStr = cmdStr.replace(/\${fileBasenameNoExt}/g, `${path.basename(document.fileName, extName)}`);
+			cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
 			cmdStr = cmdStr.replace(/\${cwd}/g, `${process.cwd()}`);
 
 			// replace environment variables ${env.Name}

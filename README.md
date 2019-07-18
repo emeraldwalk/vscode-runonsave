@@ -60,6 +60,7 @@ Commands support placeholders similar to tasks.json.
 * ${fileDirname}: directory name of saved file
 * ${fileExtname}: extension (including .) of saved file
 * ${fileBasenameNoExt}: saved file's basename without extension
+* ${relativeFile} - the current opened file relative to ${workspaceFolder}
 * ${cwd}: current working directory (this is the working directory that vscode is running in not the project directory)
 
 ### Environment Variable Tokens
