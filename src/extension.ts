@@ -51,13 +51,16 @@ class RunOnSaveExtension {
 	}
 
 	/** Recursive call to run commands. */
-	private _runCommands(commands: Array<ICommand>): void {
+	private _runCommands(
+		commands: Array<ICommand>,
+		document: vscode.TextDocument
+	): void {
 		if (commands.length) {
 			var cfg = commands.shift();
 
 			this.showOutputMessage(`*** cmd start: ${cfg.cmd}`);
 
-			var child = exec(cfg.cmd, this._execOption);
+			var child = exec(cfg.cmd, this._getExecOption(document));
 			child.stdout.on('data', data => this._outputChannel.append(data));
 			child.stderr.on('data', data => this._outputChannel.append(data));
 			child.on('error', (e) => {
@@ -66,13 +69,13 @@ class RunOnSaveExtension {
 			child.on('exit', (e) => {
 				// if sync
 				if (!cfg.isAsync) {
-					this._runCommands(commands);
+					this._runCommands(commands, document);
 				}
 			});
 
 			// if async, go ahead and run next command
 			if (cfg.isAsync) {
-				this._runCommands(commands);
+				this._runCommands(commands, document);
 			}
 		}
 		else {
@@ -82,11 +85,25 @@ class RunOnSaveExtension {
 		}
 	}
 
-	private get _execOption(): {shell: string, cwd: string} {
+	private _getExecOption(
+		document: vscode.TextDocument
+	): {shell: string, cwd: string} {
 		return {
 			shell: this.shell,
-			cwd: vscode.workspace.rootPath,
+			cwd: this._getWorkspaceFolderPath(document.uri),
 		};
+	}
+
+	private _getWorkspaceFolderPath(
+		uri: vscode.Uri
+	) {
+		const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+
+		// NOTE: rootPath seems to be deprecated but seems like the best fallback so that
+		// single project workspaces still work. If I come up with a better option, I'll change it.
+		return workspaceFolder
+			? workspaceFolder.uri.path
+			: vscode.workspace.rootPath;
 	}
 
 	public get isEnabled(): boolean {
@@ -169,13 +186,7 @@ class RunOnSaveExtension {
 			let cmdStr = cfg.cmd;
 
 			const extName = path.extname(document.fileName);
-			const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-
-			// NOTE: rootPath seems to be deprecated but seems like the best fallback so that
-			// single project workspaces still work. If I come up with a better option, I'll change it.
-			const workspaceFolderPath = workspaceFolder
-				? workspaceFolder.uri.path
-				: vscode.workspace.rootPath;
+			const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
 
 			cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
 
@@ -201,6 +212,6 @@ class RunOnSaveExtension {
 			});
 		}
 
-		this._runCommands(commands);
+		this._runCommands(commands, document);
 	}
 }
