@@ -196,15 +196,15 @@ class RunOnSaveExtension {
 
 			// DEPRECATED: workspaceFolder is more inline with vscode variables,
 			// but leaving old version in place for any users already using it.
-			cmdStr = cmdStr.replace(/\${workspaceRoot}/g, `${workspaceFolderPath}`);
+			cmdStr = cmdStr.replace(/\${workspaceRoot}/g, workspaceFolderPath);
 
-			cmdStr = cmdStr.replace(/\${workspaceFolder}/g, `${workspaceFolderPath}`);
-			cmdStr = cmdStr.replace(/\${fileBasename}/g, `${path.basename(document.fileName)}`);
-			cmdStr = cmdStr.replace(/\${fileDirname}/g, `${path.dirname(document.fileName)}`);
-			cmdStr = cmdStr.replace(/\${fileExtname}/g, `${extName}`);
-			cmdStr = cmdStr.replace(/\${fileBasenameNoExt}/g, `${path.basename(document.fileName, extName)}`);
+			cmdStr = cmdStr.replace(/\${workspaceFolder}/g, workspaceFolderPath);
+			cmdStr = cmdStr.replace(/\${fileBasename}/g, path.basename(document.fileName));
+			cmdStr = cmdStr.replace(/\${fileDirname}/g, path.dirname(document.fileName));
+			cmdStr = cmdStr.replace(/\${fileExtname}/g, extName);
+			cmdStr = cmdStr.replace(/\${fileBasenameNoExt}/g, path.basename(document.fileName, extName));
 			cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
-			cmdStr = cmdStr.replace(/\${cwd}/g, `${process.cwd()}`);
+			cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
 
 			// replace environment variables ${env.Name}
 			cmdStr = cmdStr.replace(/\${env\.([^}]+)}/g, (sub: string, envName: string) => {
