@@ -7,7 +7,7 @@
 		"color": "#5c2d91",
 		"theme": "light"
 	},
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"publisher": "emeraldwalk",
 	"license": "Apache-2.0",
 	"homepage": "https://github.com/emeraldwalk/vscode-runonsave/blob/master/README.md",
