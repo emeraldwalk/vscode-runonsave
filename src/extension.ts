@@ -102,7 +102,7 @@ class RunOnSaveExtension {
 		// NOTE: rootPath seems to be deprecated but seems like the best fallback so that
 		// single project workspaces still work. If I come up with a better option, I'll change it.
 		return workspaceFolder
-			? workspaceFolder.uri.path
+			? workspaceFolder.uri.fsPath
 			: vscode.workspace.rootPath;
 	}
 
@@ -189,7 +189,7 @@ class RunOnSaveExtension {
 			const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
 			const relativeFile = path.relative(
 				workspaceFolderPath,
-				document.uri.path
+				document.uri.fsPath
 			);
 
 			cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
