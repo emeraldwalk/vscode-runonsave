@@ -53,7 +53,7 @@
 						},
 						"shell": {
 							"type": "string",
-							"description": "Shell to execute the command with (gets passed to child_process.exec as an options arg. e.g. child_process(cmd, { shell })."
+							"description": "Specify the path to the shell that will be used to execute commands (gets passed to child_process.exec as an options arg. e.g. child_process(cmd, { shell })."
 						},
 						"commands": {
 							"type": "array",
