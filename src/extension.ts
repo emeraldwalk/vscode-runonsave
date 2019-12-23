@@ -187,23 +187,27 @@ class RunOnSaveExtension {
 
 			const extName = path.extname(document.fileName);
 			const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
-			const relativeFile = path.relative(
-				workspaceFolderPath,
-				document.uri.fsPath
-			);
-
+			
 			cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
+			
+			if (workspaceFolderPath) {
+				const relativeFile = path.relative(
+					workspaceFolderPath,
+					document.uri.fsPath
+				);
 
-			// DEPRECATED: workspaceFolder is more inline with vscode variables,
-			// but leaving old version in place for any users already using it.
-			cmdStr = cmdStr.replace(/\${workspaceRoot}/g, workspaceFolderPath);
+				// DEPRECATED: workspaceFolder is more inline with vscode variables,
+				// but leaving old version in place for any users already using it.
+				cmdStr = cmdStr.replace(/\${workspaceRoot}/g, workspaceFolderPath);
+	
+				cmdStr = cmdStr.replace(/\${workspaceFolder}/g, workspaceFolderPath);
+				cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
+			}
 
-			cmdStr = cmdStr.replace(/\${workspaceFolder}/g, workspaceFolderPath);
 			cmdStr = cmdStr.replace(/\${fileBasename}/g, path.basename(document.fileName));
 			cmdStr = cmdStr.replace(/\${fileDirname}/g, path.dirname(document.fileName));
 			cmdStr = cmdStr.replace(/\${fileExtname}/g, extName);
 			cmdStr = cmdStr.replace(/\${fileBasenameNoExt}/g, path.basename(document.fileName, extName));
-			cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
 			cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
 
 			// replace environment variables ${env.Name}
