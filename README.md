@@ -22,28 +22,34 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
 This sample configuration will run echo statements including the saved file path.
 In this sample, the first command is async, so the second command will get executed immediately even if first hasn't completed.
 Since the second isn't async, the third command won't execute until the second is complete.
+```
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": ".*",
+        "isAsync": true,
+        "cmd": "echo 'I run for all files.'"
+      },
+      {
+        "match": "\\.txt$",
+        "cmd": "echo 'I am a .txt file ${file}.'"
+      },
+      {
+        "match": "\\.js$",
+        "cmd": "echo 'I am a .js file ${file}.'"
+      },
+      {
+        "match": ".*",
+        "cmd": "echo 'I am ${env.USERNAME}.'"
+      }
+    ]
+  }
+}
+```
 
-    "emeraldwalk.runonsave": {
-		"commands": [
-			{
-				"match": ".*",
-				"isAsync": true,
-				"cmd": "echo 'I run for all files.'"
-			},
-			{
-				"match": "\\.txt$",
-				"cmd": "echo 'I am a .txt file ${file}.'"
-			},
-			{
-				"match": "\\.js$",
-				"cmd": "echo 'I am a .js file ${file}.'"
-			},
-			{
-				"match": ".*",
-				"cmd": "echo 'I am ${env.USERNAME}.'"
-			}
-		]
-	}
+## Output of the commands
+Please see the output in Output window and then switch the right side drop down to "Run On Save" to see the ouput of the commands stdout
 
 ## Commands
 The following commands are exposed in the command palette:
