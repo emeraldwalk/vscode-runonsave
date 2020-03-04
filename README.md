@@ -2,6 +2,7 @@
 This extension allows configuring commands that get run whenever a file is saved in vscode.
 
 NOTE: Commands only get run when saving an existing file. Creating new files, and Save as... don't trigger the commands.
+NOTE: There are multiple `Run On Save` extensions in the VS Code Marketplace, make sure to install the one by `emeraldwalk`.
 
 ## Features
 * Configure multiple commands that run when a file is saved
