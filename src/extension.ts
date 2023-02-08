@@ -43,9 +43,9 @@ interface IConfig {
 class RunOnSaveExtension {
 	private _outputChannel: vscode.OutputChannel;
 	private _context: vscode.ExtensionContext;
-	private _config: IConfig;
+	private _config: IConfig | undefined;
 	private _statusBarItem: vscode.StatusBarItem;
-	private _statusBarItemTimer: NodeJS.Timeout;
+	private _statusBarItemTimer: NodeJS.Timeout | undefined;
 
 	constructor(context: vscode.ExtensionContext) {
 		this._context = context;
@@ -60,7 +60,7 @@ class RunOnSaveExtension {
 		document: vscode.TextDocument
 	): void {
 		if (commands.length) {
-			var cfg = commands.shift();
+			var cfg = commands.shift()!;
 
 			this.showOutputMessage(`*** cmd start: ${cfg.cmd}`);
 
@@ -94,7 +94,7 @@ class RunOnSaveExtension {
 	): {shell: string, cwd: string} {
 		return {
 			shell: this.shell,
-			cwd: this._getWorkspaceFolderPath(document.uri),
+			cwd: this._getWorkspaceFolderPath(document.uri) ?? '',
 		};
 	}
 
@@ -125,15 +125,15 @@ class RunOnSaveExtension {
 	}
 
 	public get shell(): string {
-		return this._config.shell;
+		return this._config?.shell ?? '';
 	}
 
 	public get autoClearConsole(): boolean {
-		return !!this._config.autoClearConsole;
+		return !!this._config?.autoClearConsole ?? false;
 	}
 
 	public get commands(): Array<ICommand> {
-		return this._config.commands || [];
+		return this._config?.commands || [];
 	}
 
 	public loadConfig(): void {
@@ -154,11 +154,14 @@ class RunOnSaveExtension {
 	 */
 	public async showStatusMessage(message: string) {
 		this._statusBarItem.text = message;
-		this._statusBarItem.color = new vscode.ThemeColor('badge.background');
-		this._statusBarItem.backgroundColor = new vscode.ThemeColor('badge.foreground');
+		this._statusBarItem.color = new vscode.ThemeColor('statusBarItem.prominentForeground');
+		this._statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.prominentBackground');
 		this._statusBarItem.show();
 
-		clearTimeout(this._statusBarItemTimer);
+		if (this._statusBarItemTimer) {
+			clearTimeout(this._statusBarItemTimer);
+		}
+
 		await this.hideStatusMessage();
 	}
 
@@ -167,7 +170,7 @@ class RunOnSaveExtension {
 			this._outputChannel.clear();
 		}
 
-		if (this._config.statusBarMessage) {
+		if (this._config?.statusBarMessage) {
 			this.showStatusMessage(this._config.statusBarMessage);
 		}
 
@@ -205,7 +208,7 @@ class RunOnSaveExtension {
 			let cmdStr = cfg.cmd;
 
 			const extName = path.extname(document.fileName);
-			const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
+			const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri) ?? '.';
 			const relativeFile = path.relative(
 				workspaceFolderPath,
 				document.uri.fsPath
@@ -226,9 +229,7 @@ class RunOnSaveExtension {
 			cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
 
 			// replace environment variables ${env.Name}
-			cmdStr = cmdStr.replace(/\${env\.([^}]+)}/g, (sub: string, envName: string) => {
-				return process.env[envName];
-			});
+			cmdStr = cmdStr.replace(/\${env\.([^}]+)}/g, (sub: string, envName: string) => process.env[envName] ?? '');
 
 			commands.push({
 				cmd: cmdStr,
