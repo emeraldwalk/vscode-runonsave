@@ -8,16 +8,16 @@ export function activate(context: vscode.ExtensionContext): void {
 	extension.showOutputMessage();
 
 	vscode.workspace.onDidChangeConfiguration(() => {
-		let disposeStatus = extension.showStatusMessage('Run On Save: Reloading config.');
+		let disposeStatus = vscode.window.setStatusBarMessage('Run On Save: Reloading config.', 1000);
 		extension.loadConfig();
 		disposeStatus.dispose();
 	});
 
-	vscode.commands.registerCommand('extension.emeraldwalk.enableRunOnSave', () => {
+	vscode.commands.registerCommand('extension.the-codesmith.enableRunOnSave', () => {
 		extension.isEnabled = true;
 	});
 
-	vscode.commands.registerCommand('extension.emeraldwalk.disableRunOnSave', () => {
+	vscode.commands.registerCommand('extension.the-codesmith.disableRunOnSave', () => {
 		extension.isEnabled = false;
 	});
 
@@ -37,16 +37,20 @@ interface IConfig {
 	shell: string;
 	autoClearConsole: boolean;
 	commands: Array<ICommand>;
+	statusBarMessage: string;
 }
 
 class RunOnSaveExtension {
 	private _outputChannel: vscode.OutputChannel;
 	private _context: vscode.ExtensionContext;
 	private _config: IConfig;
+	private _statusBarItem: vscode.StatusBarItem;
+	private _statusBarItemTimer: NodeJS.Timeout;
 
 	constructor(context: vscode.ExtensionContext) {
 		this._context = context;
 		this._outputChannel = vscode.window.createOutputChannel('Run On Save');
+		this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 999)
 		this.loadConfig();
 	}
 
@@ -81,7 +85,7 @@ class RunOnSaveExtension {
 		else {
 			// NOTE: This technically just marks the end of commands starting.
 			// There could still be asyc commands running.
-			this.showStatusMessage('Run on Save done.');
+			vscode.window.setStatusBarMessage('Run on Save done.', 1000);
 		}
 	}
 
@@ -106,6 +110,12 @@ class RunOnSaveExtension {
 			: vscode.workspace.rootPath;
 	}
 
+	private hideStatusMessage() {
+		this._statusBarItemTimer = setTimeout(() => {
+				this._statusBarItem.hide()
+			}, 2000);
+	}
+
 	public get isEnabled(): boolean {
 		return !!this._context.globalState.get('isEnabled', true);
 	}
@@ -127,7 +137,7 @@ class RunOnSaveExtension {
 	}
 
 	public loadConfig(): void {
-		this._config = <IConfig><any>vscode.workspace.getConfiguration('emeraldwalk.runonsave');
+		this._config = <IConfig><any>vscode.workspace.getConfiguration('the-codesmith.runonsave');
 	}
 
 	/**
@@ -142,14 +152,23 @@ class RunOnSaveExtension {
 	 * Show message in status bar and output channel.
 	 * Return a disposable to remove status bar message.
 	 */
-	public showStatusMessage(message: string): vscode.Disposable {
-		this.showOutputMessage(message);
-		return vscode.window.setStatusBarMessage(message);
+	public async showStatusMessage(message: string) {
+		this._statusBarItem.text = message;
+		this._statusBarItem.color = new vscode.ThemeColor('badge.background');
+		this._statusBarItem.backgroundColor = new vscode.ThemeColor('badge.foreground');
+		this._statusBarItem.show();
+
+		clearTimeout(this._statusBarItemTimer);
+		await this.hideStatusMessage();
 	}
 
 	public runCommands(document: vscode.TextDocument): void {
 		if(this.autoClearConsole) {
 			this._outputChannel.clear();
+		}
+
+		if (this._config.statusBarMessage) {
+			this.showStatusMessage(this._config.statusBarMessage);
 		}
 
 		if(!this.isEnabled || this.commands.length === 0) {
@@ -178,7 +197,7 @@ class RunOnSaveExtension {
 			return;
 		}
 
-		this.showStatusMessage('Running on save commands...');
+		vscode.window.setStatusBarMessage('Running on save commands...', 1000)
 
 		// build our commands by replacing parameters with values
 		const commands: Array<ICommand> = [];
