@@ -68,8 +68,8 @@ Commands support placeholders similar to tasks.json.
 * ${env.Name}
 
 ## Links
-* [Marketplace](https://marketplace.visualstudio.com/items/the-codesmithwalk.RunOnSave)
-* [Source Code](https://github.com/the-codesmithwalk/vscode-runonsave)
+* [Marketplace](https://marketplace.visualstudio.com/items/the-codesmith.RunOnSave)
+* [Source Code](https://github.com/the-codesmith/vscode-runonsave)
 
 ## License
-[Apache](https://github.com/the-codesmithwalk/vscode-runonsave/blob/master/LICENSE)
+[Apache](https://github.com/the-codesmith/vscode-runonsave/blob/master/LICENSE)
