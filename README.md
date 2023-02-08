@@ -9,7 +9,7 @@ NOTE: Commands only get run when saving an existing file. Creating new files, an
 * Sync and async support
 
 ## Configuration
-Add "emeraldwalk.runonsave" configuration to user or workspace settings.
+Add "the-codesmith.runonsave" configuration to user or workspace settings.
 * "shell" - (optional) shell path to be used with child_process.exec options that runs commands.
 * "autoClearConsole" - (optional) clear VSCode output console every time commands run. Defaults to false.
 * "commands" - array of commands that will be run whenever a file is saved.
@@ -23,7 +23,7 @@ This sample configuration will run echo statements including the saved file path
 In this sample, the first command is async, so the second command will get executed immediately even if first hasn't completed.
 Since the second isn't async, the third command won't execute until the second is complete.
 
-    "emeraldwalk.runonsave": {
+    "the-codesmith.runonsave": {
 		"commands": [
 			{
 				"match": ".*",
@@ -68,8 +68,8 @@ Commands support placeholders similar to tasks.json.
 * ${env.Name}
 
 ## Links
-* [Marketplace](https://marketplace.visualstudio.com/items/emeraldwalk.RunOnSave)
-* [Source Code](https://github.com/emeraldwalk/vscode-runonsave)
+* [Marketplace](https://marketplace.visualstudio.com/items/the-codesmithwalk.RunOnSave)
+* [Source Code](https://github.com/the-codesmithwalk/vscode-runonsave)
 
 ## License
-[Apache](https://github.com/emeraldwalk/vscode-runonsave/blob/master/LICENSE)
+[Apache](https://github.com/the-codesmithwalk/vscode-runonsave/blob/master/LICENSE)

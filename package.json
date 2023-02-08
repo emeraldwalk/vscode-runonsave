@@ -8,15 +8,15 @@
 		"theme": "light"
 	},
 	"version": "0.1.0",
-	"publisher": "emeraldwalk",
+	"publisher": "the-codesmith",
 	"license": "Apache-2.0",
-	"homepage": "https://github.com/emeraldwalk/vscode-runonsave/blob/master/README.md",
+	"homepage": "https://github.com/the-codesmith/vscode-runonsave/blob/master/README.md",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/emeraldwalk/vscode-runonsave.git"
+		"url": "https://github.com/the-codesmith/vscode-runonsave.git"
 	},
 	"bugs": {
-		"url": "https://github.com/emeraldwalk/vscode-runonsave/issues"
+		"url": "https://github.com/the-codesmith/vscode-runonsave/issues"
 	},
 	"engines": {
 		"vscode": "^0.10.1"
@@ -31,11 +31,11 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.emeraldwalk.enableRunOnSave",
+				"command": "extension.the-codesmith.enableRunOnSave",
 				"title": "Run On Save: Enable"
 			},
 			{
-				"command": "extension.emeraldwalk.disableRunOnSave",
+				"command": "extension.the-codesmith.disableRunOnSave",
 				"title": "Run On Save: Disable"
 			}
 		],
@@ -43,7 +43,7 @@
 			"title": "Run On Save command configuration.",
 			"type": "object",
 			"properties": {
-				"emeraldwalk.runonsave": {
+				"the-codesmith.runonsave": {
 					"type": "object",
 					"properties": {
 						"autoClearConsole": {
@@ -79,6 +79,10 @@
 										"type": "boolean",
 										"description": "Run command asynchronously.",
 										"default": false
+									},
+									"notification": {
+										"type": "string",
+										"description": "Notification to display on save."
 									}
 								}
 							}
