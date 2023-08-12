@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import {exec} from 'child_process';
+import { exec } from 'child_process';
+import { config } from 'process';
 
 export function activate(context: vscode.ExtensionContext): void {
 
@@ -37,7 +38,13 @@ interface IConfig {
 	shell: string;
 	autoClearConsole: boolean;
 	commands: Array<ICommand>;
+	messages: {
+		running: string,
+		done: string,
+	}
 }
+
+const defaultMessages = { running: 'Running on save commands...', done: 'Run on Save done.' }
 
 class RunOnSaveExtension {
 	private _outputChannel: vscode.OutputChannel;
@@ -53,7 +60,7 @@ class RunOnSaveExtension {
 	/** Recursive call to run commands. */
 	private _runCommands(
 		commands: Array<ICommand>,
-		document: vscode.TextDocument
+		document: vscode.TextDocument,
 	): void {
 		if (commands.length) {
 			var cfg = commands.shift();
@@ -81,13 +88,13 @@ class RunOnSaveExtension {
 		else {
 			// NOTE: This technically just marks the end of commands starting.
 			// There could still be asyc commands running.
-			this.showStatusMessage('Run on Save done.');
+			this.showStatusMessage(this.messages.done);
 		}
 	}
 
 	private _getExecOption(
 		document: vscode.TextDocument
-	): {shell: string, cwd: string} {
+	): { shell: string, cwd: string } {
 		return {
 			shell: this.shell,
 			cwd: this._getWorkspaceFolderPath(document.uri),
@@ -126,6 +133,10 @@ class RunOnSaveExtension {
 		return this._config.commands || [];
 	}
 
+	public get messages(): { running: string, done: string } | undefined {
+		return this._config.messages ?? defaultMessages
+	}
+
 	public loadConfig(): void {
 		this._config = <IConfig><any>vscode.workspace.getConfiguration('emeraldwalk.runonsave');
 	}
@@ -134,7 +145,7 @@ class RunOnSaveExtension {
 	 * Show message in output channel
 	 */
 	public showOutputMessage(message?: string): void {
-		message = message || `Run On Save ${this.isEnabled ? 'enabled': 'disabled'}.`;
+		message = message || `Run On Save ${this.isEnabled ? 'enabled' : 'disabled'}.`;
 		this._outputChannel.appendLine(message);
 	}
 
@@ -148,11 +159,11 @@ class RunOnSaveExtension {
 	}
 
 	public runCommands(document: vscode.TextDocument): void {
-		if(this.autoClearConsole) {
+		if (this.autoClearConsole) {
 			this._outputChannel.clear();
 		}
 
-		if(!this.isEnabled || this.commands.length === 0) {
+		if (!this.isEnabled || this.commands.length === 0) {
 			this.showOutputMessage();
 			return;
 		}
@@ -178,7 +189,7 @@ class RunOnSaveExtension {
 			return;
 		}
 
-		this.showStatusMessage('Running on save commands...');
+		this.showStatusMessage(this.messages.running);
 
 		// build our commands by replacing parameters with values
 		const commands: Array<ICommand> = [];

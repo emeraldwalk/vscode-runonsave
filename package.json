@@ -55,6 +55,17 @@
 							"type": "string",
 							"description": "Shell to execute the command with (gets passed to child_process.exec as an options arg. e.g. child_process(cmd, { shell })."
 						},
+						"messages": {
+							"type": "object",
+							"running": {
+								"type": "string",
+								"description": "Message to show when Run On Save is executing commands."
+							},
+							"done": {
+								"type": "string",
+								"description": "Message to show when Run On Save is done executing commands."
+							}
+						},
 						"commands": {
 							"type": "array",
 							"items": {
