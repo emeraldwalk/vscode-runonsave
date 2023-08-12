@@ -17,7 +17,10 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
   > NOTE Since this is a Regex, and also in a JSON string backslashes have to be double escaped such as when targetting folders. e.g. "match": "some\\\\\\\\folder\\\\\\\\.*"
   * "cmd" - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
   * "isAsync" (optional) - defaults to false. If true, next command will be run before this one finishes.
-
+  * "message" (optional) - message to show when the command is started.
+* "messages" - status messages for the plugin
+  * "running" - message to show when commands are being run.
+  * "done" - message to show when all commands have been run.
 ### Sample Config
 This sample configuration will run echo statements including the saved file path.
 In this sample, the first command is async, so the second command will get executed immediately even if first hasn't completed.
