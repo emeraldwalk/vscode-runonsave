@@ -137,8 +137,17 @@ class RunOnSaveExtension {
 		return this._config.commands || [];
 	}
 
-	public get messages(): { running: string, done: string } | undefined {
-		return this._config.messages ?? defaultMessages
+	public get messages(): { running: string, done: string } {
+		const cfgMessages = this._config.messages
+		if (cfgMessages) {
+			return {
+				running: cfgMessages.running ?? defaultMessages.running,
+				done: cfgMessages.done ?? defaultMessages.done
+			}
+		} else {
+			return defaultMessages
+		}
+
 	}
 
 	public loadConfig(): void {
