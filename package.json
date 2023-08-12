@@ -90,6 +90,10 @@
 										"type": "boolean",
 										"description": "Run command asynchronously.",
 										"default": false
+									},
+									"message": {
+										"type": "string",
+										"description": "Message to show when the command is being started."
 									}
 								}
 							}

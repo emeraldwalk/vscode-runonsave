@@ -32,6 +32,7 @@ interface ICommand {
 	notMatch?: string;
 	cmd: string;
 	isAsync: boolean;
+	message?: string;
 }
 
 interface IConfig {
@@ -66,6 +67,9 @@ class RunOnSaveExtension {
 			var cfg = commands.shift();
 
 			this.showOutputMessage(`*** cmd start: ${cfg.cmd}`);
+			if (cfg.message) {
+				this.showStatusMessage(cfg.message);
+			}
 
 			var child = exec(cfg.cmd, this._getExecOption(document));
 			child.stdout.on('data', data => this._outputChannel.append(data));
@@ -224,7 +228,8 @@ class RunOnSaveExtension {
 
 			commands.push({
 				cmd: cmdStr,
-				isAsync: !!cfg.isAsync
+				isAsync: !!cfg.isAsync,
+				message: cfg.message
 			});
 		}
 
