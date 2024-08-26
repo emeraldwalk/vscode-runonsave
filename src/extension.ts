@@ -205,7 +205,8 @@ class RunOnSaveExtension {
 			cmdStr = cmdStr.replace(/\${fileBasenameNoExt}/g, path.basename(document.fileName, extName));
 			cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
 			cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
-			cmdStr = cmdStr.replace(/\${datetime}/g, new Date());
+			cmdStr = cmdStr.replace(/\${datetime}/g, (new Date()).toLocalString());
+			cmdStr = cmdStr.replace(/\${datetimeUTC}/g, new Date());
 
 			// replace environment variables ${env.Name}
 			cmdStr = cmdStr.replace(/\${env\.([^}]+)}/g, (sub: string, envName: string) => {
