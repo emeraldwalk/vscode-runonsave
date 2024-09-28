@@ -4,8 +4,8 @@
   "description": "Run commands when a file is saved in vscode.",
   "icon": "images/save-icon.png",
   "galleryBanner": {
-    "color": "#5c2d91",
-    "theme": "light"
+    "color": "#3e136e",
+    "theme": "dark"
   },
   "version": "0.2.1",
   "engines": {
