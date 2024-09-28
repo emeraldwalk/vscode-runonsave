@@ -14,3 +14,8 @@ Update version in `package.json`
 ```sh
 vsce publish
 ```
+
+```sh
+git tag vX.X.X
+git push --tags
+```
