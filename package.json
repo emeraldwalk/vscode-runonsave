@@ -1,105 +1,111 @@
 {
-	"name": "RunOnSave",
-	"displayName": "Run on Save",
-	"description": "Run commands when a file is saved in vscode.",
-	"icon": "images/save-icon.png",
-	"galleryBanner": {
-		"color": "#5c2d91",
-		"theme": "light"
-	},
-	"version": "0.1.0",
-	"publisher": "emeraldwalk",
-	"license": "Apache-2.0",
-	"homepage": "https://github.com/emeraldwalk/vscode-runonsave/blob/master/README.md",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/emeraldwalk/vscode-runonsave.git"
-	},
-	"bugs": {
-		"url": "https://github.com/emeraldwalk/vscode-runonsave/issues"
-	},
-	"engines": {
-		"vscode": "^0.10.1"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"*"
-	],
-	"main": "./out/src/extension",
-	"contributes": {
-		"commands": [
-			{
-				"command": "extension.emeraldwalk.enableRunOnSave",
-				"title": "Run On Save: Enable"
-			},
-			{
-				"command": "extension.emeraldwalk.disableRunOnSave",
-				"title": "Run On Save: Disable"
-			}
-		],
-		"configuration": {
-			"title": "Run On Save command configuration.",
-			"type": "object",
-			"properties": {
-				"emeraldwalk.runonsave": {
-					"type": "object",
-					"properties": {
-						"autoClearConsole": {
-							"type": "boolean",
-							"description": "Automatically clear the console on each save before running commands.",
-							"default": false
-						},
-						"shell": {
-							"type": "string",
-							"description": "Shell to execute the command with (gets passed to child_process.exec as an options arg. e.g. child_process(cmd, { shell })."
-						},
-						"commands": {
-							"type": "array",
-							"items": {
-								"type": "object",
-								"properties": {
-									"match": {
-										"type": "string",
-										"description": "Regex for matching files to run commands on \n\nNOTE: This is a regex and not a file path spce, so backslashes have to be escaped. They also have to be escaped in json strings, so you may have to double escape them in certain cases such as targetting contents of folders.\n\ne.g.\n\"match\": \"some\\\\\\\\directory\\\\\\\\.*\"",
-										"default": ".*"
-									},
-									"notMatch": {
-										"type": "string",
-										"description": "Regex for matching files *not* to run commands on.",
-										"default": ".*"
-									},
-									"cmd": {
-										"type": "string",
-										"description": "Command to execute on save.",
-										"default": "echo ${file}"
-									},
-									"isAsync": {
-										"type": "boolean",
-										"description": "Run command asynchronously.",
-										"default": false
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "tsc -p ./",
-		"compile": "tsc -watch -p ./",
-		"postinstall": "node ./node_modules/vscode/bin/install"
-	},
-	"devDependencies": {
-		"@types/mocha": "^5.2.5",
-		"@types/node": "^10.14.12",
-		"typescript": "^3.3.1",
-		"vscode": "^1.1.28"
-	},
-	"dependencies": {
-		"@types/vscode": "^1.36.0"
-	}
+  "name": "RunOnSave",
+  "displayName": "Run on Save",
+  "description": "Run commands when a file is saved in vscode.",
+  "icon": "images/save-icon.png",
+  "galleryBanner": {
+    "color": "#3e136e",
+    "theme": "dark"
+  },
+  "version": "0.2.2",
+  "engines": {
+    "vscode": "^1.86.0"
+  },
+  "publisher": "emeraldwalk",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/emeraldwalk/vscode-runonsave/blob/master/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emeraldwalk/vscode-runonsave.git"
+  },
+  "bugs": {
+    "url": "https://github.com/emeraldwalk/vscode-runonsave/issues"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/src/extension",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "package:latest": "npx vsce package -o releases/runonsave-latest.vsix"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.emeraldwalk.enableRunOnSave",
+        "title": "Run On Save: Enable"
+      },
+      {
+        "command": "extension.emeraldwalk.disableRunOnSave",
+        "title": "Run On Save: Disable"
+      }
+    ],
+    "configuration": {
+      "title": "Run On Save command configuration.",
+      "type": "object",
+      "properties": {
+        "emeraldwalk.runonsave": {
+          "type": "object",
+          "properties": {
+            "autoClearConsole": {
+              "type": "boolean",
+              "description": "Automatically clear the console on each save before running commands.",
+              "default": false
+            },
+            "shell": {
+              "type": "string",
+              "description": "Shell to execute the command with (gets passed to child_process.exec as an options arg. e.g. child_process(cmd, { shell })."
+            },
+            "commands": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "match": {
+                    "type": "string",
+                    "description": "Regex for matching files to run commands on \n\nNOTE: This is a regex and not a file path spce, so backslashes have to be escaped. They also have to be escaped in json strings, so you may have to double escape them in certain cases such as targetting contents of folders.\n\ne.g.\n\"match\": \"some\\\\\\\\directory\\\\\\\\.*\"",
+                    "default": ".*"
+                  },
+                  "notMatch": {
+                    "type": "string",
+                    "description": "Regex for matching files *not* to run commands on.",
+                    "default": ".*"
+                  },
+                  "cmd": {
+                    "type": "string",
+                    "description": "Command to execute on save.",
+                    "default": "echo ${file}"
+                  },
+                  "isAsync": {
+                    "type": "boolean",
+                    "description": "Run command asynchronously.",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.86.0",
+    "@types/mocha": "^10.0.8",
+    "@types/node": "22.7.4",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "eslint": "^9.11.1",
+    "typescript": "^5.6.2",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
 }
