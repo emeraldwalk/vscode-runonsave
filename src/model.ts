@@ -1,14 +1,17 @@
-export interface ICommand {
-  match?: string;
-  notMatch?: string;
-  cmd?: string;
+export interface IMessageConfig {
   message?: string;
   messageAfter?: string;
-  isAsync: boolean;
   showElapsed: boolean;
 }
 
-export interface IConfig {
+export interface ICommand extends IMessageConfig {
+  match?: string;
+  notMatch?: string;
+  cmd?: string;
+  isAsync: boolean;
+}
+
+export interface IConfig extends IMessageConfig {
   shell: string;
   autoClearConsole: boolean;
   commands: Array<ICommand>;

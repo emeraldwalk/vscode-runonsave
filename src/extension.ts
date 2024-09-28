@@ -47,18 +47,40 @@ class RunOnSaveExtension {
 
   /** Recursive call to run commands. */
   private async _runCommands(
-    commands: Array<ICommand>,
+    commandsOrig: Array<ICommand>,
     document: vscode.TextDocument,
   ): Promise<void> {
-    const cmds = [...commands];
+    const cmds = [...commandsOrig];
+
+    const startMs = performance.now();
+    let pendingCount = cmds.length;
+
+    const onCmdComplete = (cfg: ICommand, elapsedMs: number) => {
+      --pendingCount;
+      this.showOutputMessageIfDefined(cfg.messageAfter);
+      this.showOutputMessageIfDefined(
+        cfg.showElapsed && `Elapsed ms: ${elapsedMs}`,
+      );
+
+      if (pendingCount === 0) {
+        this.showOutputMessageIfDefined(this._config.messageAfter);
+
+        const totalElapsedMs = performance.now() - startMs;
+        this.showOutputMessageIfDefined(
+          this._config.showElapsed && `Total elapsed ms: ${totalElapsedMs}`,
+        );
+      }
+    };
+
+    this.showOutputMessageIfDefined(this._config?.message);
 
     while (cmds.length > 0) {
-      const cfg = commands.shift();
+      const cfg = cmds.shift();
 
       this.showOutputMessageIfDefined(cfg.message);
 
       if (cfg.cmd == null) {
-        this.showOutputMessageIfDefined(cfg.messageAfter);
+        onCmdComplete(cfg, 0);
         continue;
       }
 
@@ -71,10 +93,7 @@ class RunOnSaveExtension {
       if (isParallel) {
         // If this is marked as parallel, don't `await` the promise
         void cmdPromise.then((elapsedMs) => {
-          this.showOutputMessageIfDefined(
-            cfg.showElapsed && `elapsed ms: ${elapsedMs}`,
-          );
-          this.showOutputMessageIfDefined(cfg.messageAfter);
+          onCmdComplete(cfg, elapsedMs);
         });
 
         continue;
@@ -82,10 +101,8 @@ class RunOnSaveExtension {
 
       // for serial commands wait till complete
       const elapsedMs = await cmdPromise;
-      this.showOutputMessageIfDefined(
-        cfg.showElapsed && `elapsed ms: ${elapsedMs}`,
-      );
-      this.showOutputMessageIfDefined(cfg.messageAfter);
+
+      onCmdComplete(cfg, elapsedMs);
     }
   }
 
