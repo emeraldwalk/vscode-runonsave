@@ -81,8 +81,15 @@
                   },
                   "cmd": {
                     "type": "string",
-                    "description": "Command to execute on save.",
-                    "default": "echo ${file}"
+                    "description": "Command to execute on save."
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Optional message to show before command runs."
+                  },
+                  "messageAfter": {
+                    "type": "string",
+                    "description": "Optional message to show after command runs."
                   },
                   "isAsync": {
                     "type": "boolean",
