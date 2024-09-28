@@ -5,6 +5,7 @@ export interface ICommand {
   message?: string;
   messageAfter?: string;
   isAsync: boolean;
+  showElapsed: boolean;
 }
 
 export interface IConfig {

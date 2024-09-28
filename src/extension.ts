@@ -70,7 +70,10 @@ class RunOnSaveExtension {
 
       if (isParallel) {
         // If this is marked as parallel, don't `await` the promise
-        void cmdPromise.then(() => {
+        void cmdPromise.then((elapsedMs) => {
+          this.showOutputMessageIfDefined(
+            cfg.showElapsed && `elapsed ms: ${elapsedMs}`,
+          );
           this.showOutputMessageIfDefined(cfg.messageAfter);
         });
 
@@ -78,7 +81,10 @@ class RunOnSaveExtension {
       }
 
       // for serial commands wait till complete
-      await cmdPromise;
+      const elapsedMs = await cmdPromise;
+      this.showOutputMessageIfDefined(
+        cfg.showElapsed && `elapsed ms: ${elapsedMs}`,
+      );
       this.showOutputMessageIfDefined(cfg.messageAfter);
     }
   }
@@ -86,8 +92,10 @@ class RunOnSaveExtension {
   private _getExecPromise(
     cfg: ICommand,
     document: vscode.TextDocument,
-  ): Promise<ICommand> {
+  ): Promise<number> {
     return new Promise((resolve) => {
+      const startMs = performance.now();
+
       const child = exec(cfg.cmd, this._getExecOption(document));
       child.stdout.on('data', (data) => this._outputChannel.append(data));
       child.stderr.on('data', (data) => this._outputChannel.append(data));
@@ -95,10 +103,10 @@ class RunOnSaveExtension {
         this.showOutputMessage(e.message);
         // Don't reject since we want to be able to chain and handle
         // message properties even if this errors
-        resolve(cfg);
+        resolve(performance.now() - startMs);
       });
-      child.on('exit', (e) => {
-        resolve(cfg);
+      child.on('exit', (_e) => {
+        resolve(performance.now() - startMs);
       });
     });
   }
@@ -159,10 +167,10 @@ class RunOnSaveExtension {
   }
 
   /**
-   * Show message in output channel if it is defined
+   * Show message in output channel if it is defined and not `false`.
    */
-  public showOutputMessageIfDefined(message?: string | null): void {
-    if (message == null) {
+  public showOutputMessageIfDefined(message?: string | null | false): void {
+    if (!message) {
       return;
     }
 
@@ -261,6 +269,7 @@ class RunOnSaveExtension {
         messageAfter: cfg.messageAfter,
         cmd: cmdStr,
         isAsync: !!cfg.isAsync,
+        showElapsed: cfg.showElapsed,
       });
     }
 
