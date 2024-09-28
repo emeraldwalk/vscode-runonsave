@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { exec } from 'child_process';
+import type { ICommand, IConfig } from './model';
 
 export function activate(context: vscode.ExtensionContext): void {
   const extension = new RunOnSaveExtension(context);
@@ -33,19 +34,6 @@ export function activate(context: vscode.ExtensionContext): void {
   });
 }
 
-interface ICommand {
-  match?: string;
-  notMatch?: string;
-  cmd: string;
-  isAsync: boolean;
-}
-
-interface IConfig {
-  shell: string;
-  autoClearConsole: boolean;
-  commands: Array<ICommand>;
-}
-
 class RunOnSaveExtension {
   private _outputChannel: vscode.OutputChannel;
   private _context: vscode.ExtensionContext;
@@ -58,37 +46,61 @@ class RunOnSaveExtension {
   }
 
   /** Recursive call to run commands. */
-  private _runCommands(
+  private async _runCommands(
     commands: Array<ICommand>,
     document: vscode.TextDocument,
-  ): void {
-    if (commands.length) {
+  ): Promise<void> {
+    const cmds = [...commands];
+
+    while (cmds.length > 0) {
       const cfg = commands.shift();
 
-      this.showOutputMessage(`*** cmd start: ${cfg.cmd}`);
+      this.showOutputMessageIfDefined(cfg.message);
 
+      if (cfg.cmd == null) {
+        this.showOutputMessageIfDefined(cfg.messageAfter);
+        continue;
+      }
+
+      const cmdPromise = this._getExecPromise(cfg, document);
+
+      // TODO: `isAsync` should probably be named something like `isParallel`,
+      // but will have to think about how to not make that a breaking change
+      const isParallel = cfg.isAsync;
+
+      if (isParallel) {
+        // If this is marked as parallel, don't `await` the promise
+        void cmdPromise.then(() => {
+          this.showOutputMessageIfDefined(cfg.messageAfter);
+        });
+
+        continue;
+      }
+
+      // for serial commands wait till complete
+      await cmdPromise;
+      this.showOutputMessageIfDefined(cfg.messageAfter);
+    }
+  }
+
+  private _getExecPromise(
+    cfg: ICommand,
+    document: vscode.TextDocument,
+  ): Promise<ICommand> {
+    return new Promise((resolve) => {
       const child = exec(cfg.cmd, this._getExecOption(document));
       child.stdout.on('data', (data) => this._outputChannel.append(data));
       child.stderr.on('data', (data) => this._outputChannel.append(data));
       child.on('error', (e) => {
         this.showOutputMessage(e.message);
+        // Don't reject since we want to be able to chain and handle
+        // message properties even if this errors
+        resolve(cfg);
       });
       child.on('exit', (e) => {
-        // if sync
-        if (!cfg.isAsync) {
-          this._runCommands(commands, document);
-        }
+        resolve(cfg);
       });
-
-      // if async, go ahead and run next command
-      if (cfg.isAsync) {
-        this._runCommands(commands, document);
-      }
-    } else {
-      // NOTE: This technically just marks the end of commands starting.
-      // There could still be asyc commands running.
-      this.showStatusMessage('Run on Save done.');
-    }
+    });
   }
 
   private _getExecOption(document: vscode.TextDocument): {
@@ -147,6 +159,17 @@ class RunOnSaveExtension {
   }
 
   /**
+   * Show message in output channel if it is defined
+   */
+  public showOutputMessageIfDefined(message?: string | null): void {
+    if (message == null) {
+      return;
+    }
+
+    this.showOutputMessage(message);
+  }
+
+  /**
    * Show message in status bar and output channel.
    * Return a disposable to remove status bar message.
    */
@@ -188,8 +211,6 @@ class RunOnSaveExtension {
       return;
     }
 
-    this.showStatusMessage('Running on save commands...');
-
     // build our commands by replacing parameters with values
     const commands: Array<ICommand> = [];
     for (const cfg of commandConfigs) {
@@ -202,38 +223,42 @@ class RunOnSaveExtension {
         document.uri.fsPath,
       );
 
-      cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
+      if (cmdStr) {
+        cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
 
-      // DEPRECATED: workspaceFolder is more inline with vscode variables,
-      // but leaving old version in place for any users already using it.
-      cmdStr = cmdStr.replace(/\${workspaceRoot}/g, workspaceFolderPath);
+        // DEPRECATED: workspaceFolder is more inline with vscode variables,
+        // but leaving old version in place for any users already using it.
+        cmdStr = cmdStr.replace(/\${workspaceRoot}/g, workspaceFolderPath);
 
-      cmdStr = cmdStr.replace(/\${workspaceFolder}/g, workspaceFolderPath);
-      cmdStr = cmdStr.replace(
-        /\${fileBasename}/g,
-        path.basename(document.fileName),
-      );
-      cmdStr = cmdStr.replace(
-        /\${fileDirname}/g,
-        path.dirname(document.fileName),
-      );
-      cmdStr = cmdStr.replace(/\${fileExtname}/g, extName);
-      cmdStr = cmdStr.replace(
-        /\${fileBasenameNoExt}/g,
-        path.basename(document.fileName, extName),
-      );
-      cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
-      cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
+        cmdStr = cmdStr.replace(/\${workspaceFolder}/g, workspaceFolderPath);
+        cmdStr = cmdStr.replace(
+          /\${fileBasename}/g,
+          path.basename(document.fileName),
+        );
+        cmdStr = cmdStr.replace(
+          /\${fileDirname}/g,
+          path.dirname(document.fileName),
+        );
+        cmdStr = cmdStr.replace(/\${fileExtname}/g, extName);
+        cmdStr = cmdStr.replace(
+          /\${fileBasenameNoExt}/g,
+          path.basename(document.fileName, extName),
+        );
+        cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
+        cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
 
-      // replace environment variables ${env.Name}
-      cmdStr = cmdStr.replace(
-        /\${env\.([^}]+)}/g,
-        (sub: string, envName: string) => {
-          return process.env[envName];
-        },
-      );
+        // replace environment variables ${env.Name}
+        cmdStr = cmdStr.replace(
+          /\${env\.([^}]+)}/g,
+          (sub: string, envName: string) => {
+            return process.env[envName];
+          },
+        );
+      }
 
       commands.push({
+        message: cfg.message,
+        messageAfter: cfg.messageAfter,
         cmd: cmdStr,
         isAsync: !!cfg.isAsync,
       });
