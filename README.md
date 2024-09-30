@@ -159,6 +159,8 @@ Commands support placeholders similar to tasks.json.
 - `${fileBasenameNoExt}`: saved file's basename without extension
 - `${relativeFile}` - the current opened file relative to `${workspaceFolder}`
 - `${cwd}`: current working directory (this is the working directory that vscode is running in not the project directory)
+- `${datetime}`: locale specific date time (e.g. "12/11/2012, 7:00:00 PM" for US, "20/12/2012, 03:00:00" for GB)
+- `${datetimeUTC}`: date time in UTC (e.g. "Tue Aug 19 1975 23:15:30 GMT-0700 (Pacific Daylight Time)" for US)
 
 ### Environment Variable Tokens
 
