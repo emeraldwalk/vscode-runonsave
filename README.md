@@ -38,6 +38,38 @@ The `match` and `notMatch` options expect RegEx patterns.
 
 ### Sample Configurations
 
+#### All Files
+
+```jsonc
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // Run whenver any file is saved
+        "match": ".*",
+        "cmd": "echo '${fileBasename}' saved."
+      }
+    ]
+  }
+}
+```
+
+#### Specific File Extensions
+
+```jsonc
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // Run whenver html, css,s or js files are saved
+        "match": "\\.(html|css|js)$",
+        "cmd": "echo '${fileBasename}' saved."
+      }
+    ]
+  }
+}
+```
+
 #### Exclude a File
 
 ```jsonc
