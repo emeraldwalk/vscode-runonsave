@@ -45,7 +45,7 @@ The `match` and `notMatch` options expect RegEx patterns.
   "emeraldwalk.runonsave": {
     "commands": [
       {
-        // Run whenver any file is saved
+        // Run whenever any file is saved
         "match": ".*",
         "cmd": "echo '${fileBasename}' saved."
       }
@@ -61,7 +61,7 @@ The `match` and `notMatch` options expect RegEx patterns.
   "emeraldwalk.runonsave": {
     "commands": [
       {
-        // Run whenver html, css,s or js files are saved
+        // Run whenever html, css, or js files are saved
         "match": "\\.(html|css|js)$",
         "cmd": "echo '${fileBasename}' saved."
       }
