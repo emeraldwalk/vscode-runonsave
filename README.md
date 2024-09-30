@@ -14,13 +14,14 @@ NOTE: Commands only get run when saving an existing file. Creating new files, an
 
 Add "emeraldwalk.runonsave" configuration to user or workspace settings.
 
-- "shell" - (optional) shell path to be used with child_process.exec options that runs commands.
-- "autoClearConsole" - (optional) clear VSCode output console every time commands run. Defaults to false.
-- "commands" - array of commands that will be run whenever a file is saved.
-  - "match" - a regex for matching which files to run commands on
+- `shell` - (optional) shell path to be used with child_process.exec options that runs commands.
+- `autoClearConsole` - (optional) clear VSCode output console every time commands run. Defaults to false.
+- `commands` - array of commands that will be run whenever a file is saved.
+  - `match` - a regex for matching which files to run commands on
     > NOTE Since this is a Regex, and also in a JSON string backslashes have to be double escaped such as when targetting folders. e.g. "match": "some\\\\\\\\folder\\\\\\\\.\*"
-  - "cmd" - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
-  - "isAsync" (optional) - defaults to false. If true, next command will be run before this one finishes.
+  - `notMatch` - a regex for matching which files **NOT** to run. Files that match this pattern take precedence over ones that match the `match` option. See the note on `match` option.
+  - `cmd` - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
+  - `isAsync` (optional) - defaults to false. If true, next command will be run before this one finishes.
 
 ### Sample Config
 
