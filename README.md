@@ -33,7 +33,6 @@ The `match` and `notMatch` options expect RegEx patterns.
 - Since settings are defined in `json`, backslashes have to be double escaped.
 
   e.g. If you were targetting a file path on a Windows system, you'd have to escape `\` once because it's a RegEx and a 2nd time since you are in a `json` string:
-
   `"match": "some\\\\folder\\\\.*"`
 
 ### Sample Configurations
