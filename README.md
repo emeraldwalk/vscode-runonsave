@@ -16,11 +16,17 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
 
 - `shell` - (optional) shell path to be used with child_process.exec options that runs commands.
 - `autoClearConsole` - (optional) clear VSCode output console every time commands run. Defaults to false.
+- `message` - Message to output before all commands.
+- `messageAfter` - Message to output after all commands have finished.
+- `showElapsed` - Show total elapsed time after all commands have finished.
 - `commands` - array of commands that will be run whenever a file is saved.
   - `match` - a regex for matching which files to run commands on (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `notMatch` - a regex for matching which files **NOT** to run. Files that match this pattern take precedence over ones that match the `match` option (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `cmd` - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
   - `isAsync` (optional) - defaults to false. If true, next command will be run before this one finishes.
+  - `message` - Message to output before this commands.
+  - `messageAfter` - Message to output after this command has finished.
+  - `showElapsed` - Show total elapsed time after this command.
 
 ### Notes on RegEx Options
 
@@ -129,6 +135,43 @@ The `match` and `notMatch` options expect RegEx patterns.
       {
         "match": ".*",
         "cmd": "echo 'I am ${env.USERNAME}.'"
+      }
+    ]
+  }
+}
+```
+
+#### Messages
+
+```jsonc
+{
+  "emeraldwalk.runonsave": {
+    // Messages to show before & after all commands
+    "message": "*** All Start ***",
+    "messageAfter": "*** All Complete ***",
+    // Show elappsed time for all commands
+    "showElapsed": true,
+    "commands": [
+      {
+        "match": ".*",
+        "cmd": "echo 1st Command",
+        // Messages to run before / after this cmd
+        "message": "- 1. Start",
+        "messageAfter": "- 1. Complete",
+        // Show elapsed time for this cmd
+        "showElapsed": true
+      },
+      {
+        "message": "Message only"
+      },
+      {
+        "match": ".*",
+        "cmd": "echo 2nd Command",
+        // Messages to run before / after this cmd
+        "message": "- 2. Start",
+        "messageAfter": "- 2. Complete",
+        // Show elapsed time for this cmd
+        "showElapsed": true
       }
     ]
   }
