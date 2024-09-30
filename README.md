@@ -17,24 +17,104 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
 - `shell` - (optional) shell path to be used with child_process.exec options that runs commands.
 - `autoClearConsole` - (optional) clear VSCode output console every time commands run. Defaults to false.
 - `commands` - array of commands that will be run whenever a file is saved.
-  - `match` - a regex for matching which files to run commands on
-    > NOTE Since this is a Regex, and also in a JSON string backslashes have to be double escaped such as when targetting folders. e.g. "match": "some\\\\\\\\folder\\\\\\\\.\*"
-  - `notMatch` - a regex for matching which files **NOT** to run. Files that match this pattern take precedence over ones that match the `match` option. See the note on `match` option.
+  - `match` - a regex for matching which files to run commands on (see [Notes on RegEx Options](#notes-on-regex-options)).
+  - `notMatch` - a regex for matching which files **NOT** to run. Files that match this pattern take precedence over ones that match the `match` option (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `cmd` - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
   - `isAsync` (optional) - defaults to false. If true, next command will be run before this one finishes.
 
-### Sample Config
+### Notes on RegEx Options
 
-This sample configuration will run echo statements including the saved file path.
-In this sample, the first command is async, so the second command will get executed immediately even if first hasn't completed.
-Since the second isn't async, the third command won't execute until the second is complete.
+The `match` and `notMatch` options expect RegEx patterns.
 
-```json
+- The pattern will be run against the abolute file path. This means you usually don't want to start the pattern with `^` unless you are putting a full pattern to match the abolute path.
+
+  e.g. Use `"match": "somefile\\.txt$"` instead of `"match": "^somefile\\.txt$"` if you are targetting `somefile.txt` in your workspace.
+
+- Since settings are defined in `json`, backslashes have to be double escaped.
+
+  e.g. If you were targetting a file path on a Windows system, you'd have to escape `\` once because it's a RegEx and a 2nd time since you are in a `json` string:
+  `"match": "some\\\\folder\\\\.*"`
+
+### Sample Configurations
+
+#### All Files
+
+```jsonc
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // Run whenever any file is saved
+        "match": ".*",
+        "cmd": "echo '${fileBasename}' saved."
+      }
+    ]
+  }
+}
+```
+
+#### Specific File Extensions
+
+```jsonc
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // Run whenever html, css, or js files are saved
+        "match": "\\.(html|css|js)$",
+        "cmd": "echo '${fileBasename}' saved."
+      }
+    ]
+  }
+}
+```
+
+#### Exclude a File
+
+```jsonc
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // Match all html, css, and js files
+        // except for `exclude-me.js`
+        "match": "\\.(html|css|js)$",
+        "notMatch": "exclude-me\\.js$",
+        "cmd": "echo '${fileBasename}' saved."
+      }
+    ]
+  }
+}
+```
+
+#### Exclude .vscode Folder
+
+```jsonc
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // Match all .json files except for ones in
+        // .vscode directory
+        "match": "\\.json$",
+        "notMatch": "\\.vscode/.*$",
+        "cmd": "echo '${fileBasename}' saved."
+      }
+    ]
+  }
+}
+```
+
+#### Mix of Parallel + Sequential Commands
+
+```jsonc
 {
   "emeraldwalk.runonsave": {
     "commands": [
       {
         "match": ".*",
+        // This tells next command to run immediately after
+        // this one starts instead of waiting for it to complete
         "isAsync": true,
         "cmd": "echo 'I run for all files.'"
       },
