@@ -12,10 +12,7 @@ Update version in `package.json`
 ### Publishing
 
 ```sh
-vsce publish
-```
-
-```sh
-git tag vX.X.X
+vsce publish patch
+git push
 git push --tags
 ```
