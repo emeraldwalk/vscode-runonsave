@@ -98,7 +98,7 @@ The `match` and `notMatch` options expect RegEx patterns.
         // Match all .json files except for ones in
         // .vscode directory
         "match": "\\.json$",
-        "notMatch": ".vscode/.*$",
+        "notMatch": "\\.vscode/.*$",
         "cmd": "echo '${fileBasename}' saved."
       }
     ]
