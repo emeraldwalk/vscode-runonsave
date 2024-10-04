@@ -24,7 +24,7 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
   - `notMatch` - a regex for matching which files **NOT** to run. Files that match this pattern take precedence over ones that match the `match` option (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `cmd` - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
   - `isAsync` (optional) - defaults to false. If true, next command will be run before this one finishes.
-  - `message` - Message to output before this commands.
+  - `message` - Message to output before this command.
   - `messageAfter` - Message to output after this command has finished.
   - `showElapsed` - Show total elapsed time after this command.
 

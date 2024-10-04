@@ -66,7 +66,7 @@
             },
             "message": {
               "type": "string",
-              "description": "Optional message to show before all command runs."
+              "description": "Optional message to show before all commands run."
             },
             "messageAfter": {
               "type": "string",
@@ -74,7 +74,7 @@
             },
             "showElapsed": {
               "type": "boolean",
-              "description": "Print elapsed time for all of the command.",
+              "description": "Print elapsed time for all of the commands.",
               "default": false
             },
             "commands": {
