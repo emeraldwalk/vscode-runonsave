@@ -64,6 +64,19 @@
               "type": "string",
               "description": "Shell to execute the command with (gets passed to child_process.exec as an options arg. e.g. child_process(cmd, { shell })."
             },
+            "message": {
+              "type": "string",
+              "description": "Optional message to show before all commands run."
+            },
+            "messageAfter": {
+              "type": "string",
+              "description": "Optional message to show after all command runs."
+            },
+            "showElapsed": {
+              "type": "boolean",
+              "description": "Print elapsed time for all of the commands.",
+              "default": false
+            },
             "commands": {
               "type": "array",
               "items": {
@@ -81,12 +94,24 @@
                   },
                   "cmd": {
                     "type": "string",
-                    "description": "Command to execute on save.",
-                    "default": "echo ${file}"
+                    "description": "Command to execute on save."
                   },
                   "isAsync": {
                     "type": "boolean",
                     "description": "Run command asynchronously.",
+                    "default": false
+                  },
+                  "message": {
+                    "type": "string",
+                    "description": "Optional message to show before command runs."
+                  },
+                  "messageAfter": {
+                    "type": "string",
+                    "description": "Optional message to show after command runs."
+                  },
+                  "showElapsed": {
+                    "type": "boolean",
+                    "description": "Print elapsed time for the command.",
                     "default": false
                   }
                 }
