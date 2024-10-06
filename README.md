@@ -27,6 +27,10 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
   - `message` - Message to output before this command.
   - `messageAfter` - Message to output after this command has finished.
   - `showElapsed` - Show total elapsed time after this command.
+  - `autoShowOutputPanel` - Automatically shows the output panel:
+    - `never` - Never changes the output panel visibility (default).
+    - `always` - Shows output panel when the first command starts.
+    - `error` - Shows output panel when a command fails.
 
 ### Notes on RegEx Options
 

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { exec } from 'child_process';
-import type { ICommand, IConfig } from './model';
+import type { ICommand, IConfig, IExecResult } from './model';
 
 export function activate(context: vscode.ExtensionContext): void {
   const extension = new RunOnSaveExtension(context);
@@ -55,12 +55,16 @@ class RunOnSaveExtension {
     const startMs = performance.now();
     let pendingCount = cmds.length;
 
-    const onCmdComplete = (cfg: ICommand, elapsedMs: number) => {
+    const onCmdComplete = (cfg: ICommand, res: IExecResult) => {
       --pendingCount;
       this.showOutputMessageIfDefined(cfg.messageAfter);
       this.showOutputMessageIfDefined(
-        cfg.showElapsed && `Elapsed ms: ${elapsedMs}`,
+        cfg.showElapsed && `Elapsed ms: ${res.elapsedMs}`,
       );
+
+      if (cfg.autoShowOutputPanel === 'error' && res.statusCode !== 0) {
+        this._outputChannel.show(true);
+      }
 
       if (pendingCount === 0) {
         this.showOutputMessageIfDefined(this._config.messageAfter);
@@ -79,8 +83,12 @@ class RunOnSaveExtension {
 
       this.showOutputMessageIfDefined(cfg.message);
 
+      if (cfg.autoShowOutputPanel === 'always') {
+        this._outputChannel.show(true);
+      }
+
       if (cfg.cmd == null) {
-        onCmdComplete(cfg, 0);
+        onCmdComplete(cfg, { elapsedMs: 0, statusCode: 0 });
         continue;
       }
 
@@ -109,7 +117,7 @@ class RunOnSaveExtension {
   private _getExecPromise(
     cfg: ICommand,
     document: vscode.TextDocument,
-  ): Promise<number> {
+  ): Promise<IExecResult> {
     return new Promise((resolve) => {
       const startMs = performance.now();
 
@@ -120,10 +128,12 @@ class RunOnSaveExtension {
         this.showOutputMessage(e.message);
         // Don't reject since we want to be able to chain and handle
         // message properties even if this errors
-        resolve(performance.now() - startMs);
+        // Returns a status code different than zero to optionally show output 
+        // panel with error
+        resolve({ elapsedMs: performance.now() - startMs, statusCode: 1 });
       });
-      child.on('exit', (_e) => {
-        resolve(performance.now() - startMs);
+      child.on('exit', (statusCode) => {
+        resolve({ elapsedMs: performance.now() - startMs, statusCode });
       });
     });
   }
@@ -287,6 +297,7 @@ class RunOnSaveExtension {
         cmd: cmdStr,
         isAsync: !!cfg.isAsync,
         showElapsed: cfg.showElapsed,
+        autoShowOutputPanel: cfg.autoShowOutputPanel,
       });
     }
 
