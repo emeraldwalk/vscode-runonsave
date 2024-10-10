@@ -113,6 +113,16 @@
                     "type": "boolean",
                     "description": "Print elapsed time for the command.",
                     "default": false
+                  },
+                  "autoShowOutputPanel": {
+                    "description": "Automatically shows the output panel.",
+                    "type": "string",
+                    "default": "never",
+                    "enum": [
+                      "never",
+                      "always",
+                      "error"
+                    ]
                   }
                 }
               }
