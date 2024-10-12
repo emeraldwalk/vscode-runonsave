@@ -12,4 +12,4 @@ vsce publish \
 
 git tag v$1-pre
 
- git push --tags
+git push --tags

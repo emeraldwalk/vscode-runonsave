@@ -13,8 +13,7 @@ Update version in `package.json`
 
 #### Pre-Release
 
-TODO: figure out best options here. Default seems to update package version and create commit + tag.
-Issue here is have to then downgrade back to regular release version.
+Run the following script to do a pre-release:
 
 ```sh
 # Update pre-release version in command before running it
