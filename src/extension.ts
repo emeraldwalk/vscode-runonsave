@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { exec } from 'child_process';
-import type { ICommand, IConfig, IExecResult } from './model';
+import type { ICommand, IConfig, IExecResult, Document } from './model';
 
 export function activate(context: vscode.ExtensionContext): void {
   const extension = new RunOnSaveExtension(context);
@@ -32,6 +32,10 @@ export function activate(context: vscode.ExtensionContext): void {
   vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
     extension.runCommands(document);
   });
+
+  vscode.workspace.onDidSaveNotebookDocument((document: vscode.NotebookDocument) => {
+    extension.runCommands(document);
+  });
 }
 
 class RunOnSaveExtension {
@@ -48,7 +52,7 @@ class RunOnSaveExtension {
   /** Recursive call to run commands. */
   private async _runCommands(
     commandsOrig: Array<ICommand>,
-    document: vscode.TextDocument,
+    document: Document,
   ): Promise<void> {
     const cmds = [...commandsOrig];
 
@@ -116,7 +120,7 @@ class RunOnSaveExtension {
 
   private _getExecPromise(
     cfg: ICommand,
-    document: vscode.TextDocument,
+    document: Document,
   ): Promise<IExecResult> {
     return new Promise((resolve) => {
       const startMs = performance.now();
@@ -128,7 +132,7 @@ class RunOnSaveExtension {
         this.showOutputMessage(e.message);
         // Don't reject since we want to be able to chain and handle
         // message properties even if this errors
-        // Returns a status code different than zero to optionally show output 
+        // Returns a status code different than zero to optionally show output
         // panel with error
         resolve({ elapsedMs: performance.now() - startMs, statusCode: 1 });
       });
@@ -138,7 +142,7 @@ class RunOnSaveExtension {
     });
   }
 
-  private _getExecOption(document: vscode.TextDocument): {
+  private _getExecOption(document: Document): {
     shell: string;
     cwd: string;
   } {
@@ -213,7 +217,7 @@ class RunOnSaveExtension {
     return vscode.window.setStatusBarMessage(message);
   }
 
-  public runCommands(document: vscode.TextDocument): void {
+  public runCommands(document: Document): void {
     if (this.autoClearConsole) {
       this._outputChannel.clear();
     }
@@ -226,7 +230,7 @@ class RunOnSaveExtension {
     const match = (pattern: string) =>
       pattern &&
       pattern.length > 0 &&
-      new RegExp(pattern).test(document.fileName);
+      new RegExp(pattern).test(document.uri.fsPath);
 
     const commandConfigs = this.commands.filter((cfg) => {
       const matchPattern = cfg.match || '';
@@ -251,7 +255,7 @@ class RunOnSaveExtension {
     for (const cfg of commandConfigs) {
       let cmdStr = cfg.cmd;
 
-      const extName = path.extname(document.fileName);
+      const extName = path.extname(document.uri.fsPath);
       const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
       const relativeFile = path.relative(
         workspaceFolderPath,
@@ -259,7 +263,7 @@ class RunOnSaveExtension {
       );
 
       if (cmdStr) {
-        cmdStr = cmdStr.replace(/\${file}/g, `${document.fileName}`);
+        cmdStr = cmdStr.replace(/\${file}/g, `${document.uri.fsPath}`);
 
         // DEPRECATED: workspaceFolder is more inline with vscode variables,
         // but leaving old version in place for any users already using it.
@@ -268,16 +272,16 @@ class RunOnSaveExtension {
         cmdStr = cmdStr.replace(/\${workspaceFolder}/g, workspaceFolderPath);
         cmdStr = cmdStr.replace(
           /\${fileBasename}/g,
-          path.basename(document.fileName),
+          path.basename(document.uri.fsPath),
         );
         cmdStr = cmdStr.replace(
           /\${fileDirname}/g,
-          path.dirname(document.fileName),
+          path.dirname(document.uri.fsPath),
         );
         cmdStr = cmdStr.replace(/\${fileExtname}/g, extName);
         cmdStr = cmdStr.replace(
           /\${fileBasenameNoExt}/g,
-          path.basename(document.fileName, extName),
+          path.basename(document.uri.fsPath, extName),
         );
         cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
         cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
