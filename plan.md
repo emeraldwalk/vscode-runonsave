@@ -13,6 +13,7 @@
 - 🔊 Implement a throttling mechanism to limit task execution frequency.
 - 🔍 Execute a Git pull task when the events are triggered.
 - 🔊 Maintain the original extension's structure and naming conventions as much as possible.
+- 🛡️ Implement error handling for Git operations to gracefully manage failures.
 - 📢 Implement user notifications to inform about Git operations being performed.
 
 ## 📋 Technical Plan
