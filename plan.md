@@ -20,6 +20,7 @@
 - 🔊 Modify the event listeners in the main extension file to use `onDidOpenTextDocument` and `onDidChangeTextDocument` instead of `onSave`.
 - 🔊 Implement a throttling function to prevent tasks from running too frequently.
 - 🔊 Ensure the Git pull task is executed correctly when the events are triggered.
+- 🔊 Add configuration options for customizing throttling parameters and Git commands.
 - 🔊 Test the extension locally to verify functionality.
 
 ## 📜 Installation Instructions
