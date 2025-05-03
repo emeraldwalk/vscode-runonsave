@@ -9,7 +9,7 @@
 
 ## 📊 Functional Requirements
 
-- 📜 Listen to `onDidOpenTextDocument` and `onDidChangeTextDocument` events.
+- 📜 Listen to `onDidOpenTextDocument` and `onDidChangeTextDocument` events with concurrency safeguards (such as debouncing or mutual exclusion) to avoid overlapping task executions.
 - 🔊 Implement a throttling mechanism to limit task execution frequency.
 - 🔍 Execute a Git pull task when the events are triggered.
 - 🔊 Maintain the original extension's structure and naming conventions as much as possible.
