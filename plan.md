@@ -19,7 +19,7 @@
 - 📜 Fork the original repository and clone it locally.
 - 🔊 Modify the event listeners in the main extension file to use `onDidOpenTextDocument` and `onDidChangeTextDocument` instead of `onSave`.
 - 🔊 Implement a throttling function to prevent tasks from running too frequently.
-- 🔊 Ensure the Git pull task is executed correctly when the events are triggered.
+- 🔊 Ensure the Git pull task is executed asynchronously to avoid blocking the extension during event handling.
 - 🔊 Add configuration options for customizing throttling parameters and Git commands.
 - 🔊 Test the extension locally to verify functionality.
 
