@@ -30,9 +30,10 @@
 3. 🔊 Run the extension in development mode by pressing F5.
 4. 🔊 Test the extension to ensure it functions as expected.
 5. 🔊 Package the extension using `vsce` and install it locally if desired.
-
 ## 📜 Additional Considerations
 
 - 🔊 Maintain the original extension's structure to simplify future updates from the upstream repository.
 - 🔊 Document any changes made to the original code for clarity.
+- 🔊 Consider contributing back to the original repository if the changes are beneficial to others.
+- 📊 Implement performance monitoring to track extension behavior and optimize throttling parameters.
 - 🔊 Consider contributing back to the original repository if the changes are beneficial to others.
