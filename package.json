@@ -1,5 +1,5 @@
 {
-  "name": "RunOnSave",
+  "name": "run_on_events",
   "displayName": "Run on Save",
   "description": "Run commands when a file is saved in vscode.",
   "icon": "images/save-icon.png",
@@ -7,7 +7,7 @@
     "color": "#3e136e",
     "theme": "dark"
   },
-  "version": "0.2.7",
+  "version": "0.0.1",
   "engines": {
     "vscode": "^1.86.0"
   },
