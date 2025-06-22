@@ -46,6 +46,10 @@
       {
         "command": "extension.emeraldwalk.disableRunOnSave",
         "title": "Run On Save: Disable"
+      },
+      {
+        "command": "extension.emeraldwalk.toggleRunOnSave",
+        "title": "Run On Save: Toggle"
       }
     ],
     "configuration": {

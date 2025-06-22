@@ -192,6 +192,7 @@ The following commands are exposed in the command palette:
 
 - On Save: Enable
 - On Save: Disable
+- On Save: Toggle
 
 ## Placeholder Tokens
 

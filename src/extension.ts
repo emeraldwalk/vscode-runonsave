@@ -29,6 +29,13 @@ export function activate(context: vscode.ExtensionContext): void {
     },
   );
 
+  vscode.commands.registerCommand(
+    'extension.emeraldwalk.toggleRunOnSave',
+    () => {
+      extension.isEnabled = !extension.isEnabled;
+    },
+  );
+
   vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
     extension.runCommands(document);
   });
