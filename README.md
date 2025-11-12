@@ -8,7 +8,25 @@ NOTE: Commands only get run when saving an existing file. Creating new files, an
 
 - Configure multiple commands that run when a file is saved
 - Regex pattern matching for files that trigger commands running
-- Sync and async support
+- Synchronous and asynchronous command support
+  - Synchronous commands are executed one at a time in FIFO order.
+  - Asynchronous commands are executed immediately.
+
+## `Run On Save Status` status bar
+
+The `Run On Save Status` status bar summarizes the extension's state and number of running commands. Clicking the status bar reveals the `Run On Save` output channel.
+
+The text in the status bar is of the format `<state> Sync: <num-sync> Async: <num-async>` with values:
+
+- `<state>`:
+  - `idle` - extension is enabled with no commands running.
+  - `running` extension is enabled with at least one command is running.
+  - `draining` - extension is disabled with an unfinished sync and/or async command
+  - `disabled` - extension is disabled.
+- `<num-sync>` - the number of unfinished synchronous commands. One command will be executed at a time, and the remainder are queued.
+- `<num-async>` - the number of unfinished synchronous commands. Asynchronous commands are active processes.
+
+Clicking the status bar item reveals the `Run On Save` output channel.
 
 ## Configuration
 
@@ -23,7 +41,8 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
   - `match` - a regex for matching which files to run commands on (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `notMatch` - a regex for matching which files **NOT** to run. Files that match this pattern take precedence over ones that match the `match` option (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `cmd` - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
-  - `isAsync` (optional) - defaults to false. If true, next command will be run before this one finishes.
+  - `isAsync` (optional) - defaults to false, meaning that the command wait in a FIFO queue while other synchronous commands are being processed one at a time. If true, next command will be run before this one finishes.
+  - `killSignal` (optional) - the UNIX signal to send when killing the process. Allowed values are `SIGTERM` (default), `SIGINT`, and `SIGKILL`.
   - `message` - Message to output before this command.
   - `messageAfter` - Message to output after this command has finished.
   - `showElapsed` - Show total elapsed time after this command.
@@ -184,14 +203,15 @@ The `match` and `notMatch` options expect RegEx patterns.
 
 ## Output of the commands
 
-Please see the output in Output window and then switch the right side drop down to "Run On Save" to see the ouput of the commands stdout
+The stdout for commands can be found in the `Run On Save` extension output, accessed via the `Run On Save: Show Output Channel` command.
 
 ## Commands
 
 The following commands are exposed in the command palette:
 
-- On Save: Enable
-- On Save: Disable
+- `Run On Save: Enable` - Enables the extension.
+- `Run On Save: Disable` - Disables the extension, terminates all running command processes using their `killSignal`, and clears queue of unprocessed synchronous commands.
+- `Run On Save: Show Output Channel` - Reveals the extension's output channel.
 
 ## Placeholder Tokens
 

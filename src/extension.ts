@@ -3,31 +3,34 @@ import * as path from 'path';
 import { exec } from 'child_process';
 import type { ICommand, IConfig, IExecResult, Document } from './model';
 
+const STATUS_BAR_ACTIVITY_ID = 'status.activity';
+const COMMAND_SHOW_OUTPUT_CHANNEL = 'extension.emeraldwalk.showOutputChannel';
+
 export function activate(context: vscode.ExtensionContext): void {
   const extension = new RunOnSaveExtension(context);
-  extension.showOutputMessage();
+  context.subscriptions.push(extension);
 
   vscode.workspace.onDidChangeConfiguration(() => {
-    const disposeStatus = extension.showStatusMessage(
-      'Run On Save: Reloading config.',
-    );
     extension.loadConfig();
-    disposeStatus.dispose();
   });
 
   vscode.commands.registerCommand(
     'extension.emeraldwalk.enableRunOnSave',
     () => {
-      extension.isEnabled = true;
+      extension.enable();
     },
   );
 
   vscode.commands.registerCommand(
     'extension.emeraldwalk.disableRunOnSave',
     () => {
-      extension.isEnabled = false;
+      extension.disable();
     },
   );
+
+  vscode.commands.registerCommand(COMMAND_SHOW_OUTPUT_CHANNEL, () => {
+    extension.showOutputChannel();
+  });
 
   vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
     extension.runCommands(document);
@@ -38,94 +41,119 @@ export function activate(context: vscode.ExtensionContext): void {
   });
 }
 
-class RunOnSaveExtension {
+interface runCommandConfig {
+  cfg: ICommand;
+  // The modified saved document or notebook that triggered command execution.
+  document: Document;
+  // Callback to invoke when the command finishes execution (successfully or not).
+  finishCallback: () => void;
+}
+
+class RunOnSaveExtension implements vscode.Disposable {
   private _outputChannel: vscode.OutputChannel;
   private _context: vscode.ExtensionContext;
   private _config: IConfig;
+  private _sbStatus?: vscode.StatusBarItem;
+  private _syncCommandQueue: Array<runCommandConfig> = [];
+  private _notifyWaitingSyncCommandRunner?: () => void;
+  private _activeAsyncCommands: number = 0;
+  private _commandAbortController = new AbortController();
+  private _disposed: boolean = false;
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
     this._outputChannel = vscode.window.createOutputChannel('Run On Save');
+    this._context.subscriptions.push(this._outputChannel);
     this.loadConfig();
+    this._syncRunnerLoop(); // starts the synchronous command runner loop.
+    this.refreshStatus();
   }
 
-  /** Recursive call to run commands. */
-  private async _runCommands(
-    commandsOrig: Array<ICommand>,
-    document: Document,
-  ): Promise<void> {
-    const cmds = [...commandsOrig];
+  public dispose(): void {
+    this.showOutputMessage('Disposing of Run On Save extension. Aborting all running commands and purging queue.');
+    this._disposed = true; // Indicates that the runner loop should stop.
+    this._abortAllRunningCommands();
+    // In case the runner loop is waiting for a command, wake it so that it can stop.
+    this._wakeSyncCommandRunner();
+  }
 
-    const startMs = performance.now();
-    let pendingCount = cmds.length;
+  public showOutputChannel(): void {
+    this._outputChannel.show();
+  }
 
-    const onCmdComplete = (cfg: ICommand, res: IExecResult) => {
-      --pendingCount;
-      this.showOutputMessageIfDefined(cfg.messageAfter);
-      this.showOutputMessageIfDefined(
-        cfg.showElapsed && `Elapsed ms: ${res.elapsedMs}`,
-      );
+  private _enqueueSyncCommand(rc: runCommandConfig): void {
+    this._syncCommandQueue.push(rc);
+    this.refreshStatus();
+    this._wakeSyncCommandRunner();
+  }
 
-      if (cfg.autoShowOutputPanel === 'error' && res.statusCode !== 0) {
-        this._outputChannel.show(true);
-      }
-
-      if (pendingCount === 0) {
-        this.showOutputMessageIfDefined(this._config.messageAfter);
-
-        const totalElapsedMs = performance.now() - startMs;
-        this.showOutputMessageIfDefined(
-          this._config.showElapsed && `Total elapsed ms: ${totalElapsedMs}`,
-        );
-      }
-    };
-
-    this.showOutputMessageIfDefined(this._config?.message);
-
-    while (cmds.length > 0) {
-      const cfg = cmds.shift();
-
-      this.showOutputMessageIfDefined(cfg.message);
-
-      if (cfg.autoShowOutputPanel === 'always') {
-        this._outputChannel.show(true);
-      }
-
-      if (cfg.cmd == null) {
-        onCmdComplete(cfg, { elapsedMs: 0, statusCode: 0 });
-        continue;
-      }
-
-      const cmdPromise = this._getExecPromise(cfg, document);
-
-      // TODO: `isAsync` should probably be named something like `isParallel`,
-      // but will have to think about how to not make that a breaking change
-      const isParallel = cfg.isAsync;
-
-      if (isParallel) {
-        // If this is marked as parallel, don't `await` the promise
-        void cmdPromise.then((elapsedMs) => {
-          onCmdComplete(cfg, elapsedMs);
+  /**
+   * Loop that processes synchronous commands one at a time in FIFO order.
+   */
+  private async _syncRunnerLoop(): Promise<void> {
+    while (!this._disposed) {
+      const cmd = this._syncCommandQueue.shift();
+      if (!cmd) {
+        const waitForNextSyncCommandPromise = new Promise<void>((resolve) => {
+          this._notifyWaitingSyncCommandRunner = resolve;
         });
-
+        this.refreshStatus();
+        // Block loop until a command is added to the queue.
+        await waitForNextSyncCommandPromise;
+        this.refreshStatus();
         continue;
       }
 
-      // for serial commands wait till complete
-      const elapsedMs = await cmdPromise;
-
-      onCmdComplete(cfg, elapsedMs);
+      this.refreshStatus();
+      await this._runCommand(cmd);
+      this.refreshStatus();
     }
   }
 
+  private _onCmdComplete(rc: runCommandConfig, res: IExecResult): void {
+    this.showOutputMessageIfDefined(rc.cfg.messageAfter);
+    this.showOutputMessageIfDefined(
+      rc.cfg.showElapsed && `Elapsed ms: ${res.elapsedMs}`,
+    );
+
+    if (rc.cfg.autoShowOutputPanel === 'error' && res.statusCode !== 0) {
+      this._outputChannel.show(true);
+    }
+
+    rc.finishCallback();
+  }
+
+  /** Invoke a command. */
+  private async _runCommand(
+    rc: runCommandConfig,
+  ): Promise<void> {
+    this.showOutputMessageIfDefined(rc.cfg.message);
+
+    if (rc.cfg.autoShowOutputPanel === 'always') {
+      this._outputChannel.show(true);
+    }
+
+    if (rc.cfg.cmd == null) {
+      this._onCmdComplete(rc, { elapsedMs: 0, statusCode: 0 });
+      return;
+    }
+
+    const res = await this._getExecPromise(rc);
+    this._onCmdComplete(rc, res);
+  }
+
   private _getExecPromise(
-    cfg: ICommand,
-    document: Document,
+    rc: runCommandConfig,
   ): Promise<IExecResult> {
     return new Promise((resolve) => {
       const startMs = performance.now();
 
-      const child = exec(cfg.cmd, this._getExecOption(document));
+      const child = exec(rc.cfg.cmd, {
+        shell: this.shell,
+        cwd: this._getWorkspaceFolderPath(rc.document.uri),
+        signal: this._commandAbortController.signal,
+        killSignal: rc.cfg.killSignal,
+      });
       child.stdout.on('data', (data) => this._outputChannel.append(data));
       child.stderr.on('data', (data) => this._outputChannel.append(data));
       child.on('error', (e) => {
@@ -142,16 +170,6 @@ class RunOnSaveExtension {
     });
   }
 
-  private _getExecOption(document: Document): {
-    shell: string;
-    cwd: string;
-  } {
-    return {
-      shell: this.shell,
-      cwd: this._getWorkspaceFolderPath(document.uri),
-    };
-  }
-
   private _getWorkspaceFolderPath(uri: vscode.Uri) {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
 
@@ -162,12 +180,48 @@ class RunOnSaveExtension {
       : vscode.workspace.rootPath;
   }
 
-  public get isEnabled(): boolean {
-    return !!this._context.globalState.get('isEnabled', true);
+  private _wakeSyncCommandRunner(): void {
+    const notifyWaitingRunner = this._notifyWaitingSyncCommandRunner;
+    if (notifyWaitingRunner) {
+      this._notifyWaitingSyncCommandRunner = undefined;
+      notifyWaitingRunner();
+    }
   }
-  public set isEnabled(value: boolean) {
-    this._context.globalState.update('isEnabled', value);
-    this.showOutputMessage();
+
+  private _abortAllRunningCommands(): void {
+    // Clear pending commands.
+    this._syncCommandQueue = [];
+
+    // Abort any existing commands.
+    this._commandAbortController.abort();
+    this._commandAbortController = new AbortController();
+  }
+
+  public enable(): void {
+    if (this.isEnabled()) {
+      // Already enabled.
+      return;
+    }
+
+    this._context.globalState.update('isEnabled', true).then(() => {
+      // Start the synchronous command runner loop.
+      this.showOutputMessage();
+      this.refreshStatus();
+    });
+  }
+
+  public disable(): void {
+    this._context.globalState.update('isEnabled', false).then(() => {
+      this.showOutputMessage("Disabling Run On Save. Aborting all running commands and purging queue.");
+      this._abortAllRunningCommands();
+
+      // Refresh the status bar.
+      this.refreshStatus();
+    });
+  }
+
+  public isEnabled(): boolean {
+    return !!this._context.globalState.get('isEnabled', true);
   }
 
   public get shell(): string {
@@ -183,6 +237,7 @@ class RunOnSaveExtension {
   }
 
   public loadConfig(): void {
+    this.showOutputMessage('Reloading config.');
     this._config = <IConfig>(
       (<any>vscode.workspace.getConfiguration('emeraldwalk.runonsave'))
     );
@@ -193,7 +248,7 @@ class RunOnSaveExtension {
    */
   public showOutputMessage(message?: string): void {
     message =
-      message || `Run On Save ${this.isEnabled ? 'enabled' : 'disabled'}.`;
+      message || `Run On Save ${this.isEnabled() ? 'enabled' : 'disabled'}.`;
     this._outputChannel.appendLine(message);
   }
 
@@ -208,13 +263,36 @@ class RunOnSaveExtension {
     this.showOutputMessage(message);
   }
 
-  /**
-   * Show message in status bar and output channel.
-   * Return a disposable to remove status bar message.
-   */
-  public showStatusMessage(message: string): vscode.Disposable {
-    this.showOutputMessage(message);
-    return vscode.window.setStatusBarMessage(message);
+  public refreshStatus(): void {
+    if (!this._sbStatus) {
+      this._sbStatus = vscode.window.createStatusBarItem(STATUS_BAR_ACTIVITY_ID, vscode.StatusBarAlignment.Left, 100);
+      this._sbStatus.name = 'Run On Save Status';
+      this._sbStatus.command = COMMAND_SHOW_OUTPUT_CHANNEL;
+      this._context.subscriptions.push(this._sbStatus);
+    }
+
+    let unfinishedSyncCount = this._syncCommandQueue.length;
+    if (this._notifyWaitingSyncCommandRunner === undefined && !this._disposed) {
+      // We are not disposed and the runner is not waiting for a command, so it must be running a command.
+      unfinishedSyncCount++;
+    }
+    const asyncCount = this._activeAsyncCommands;
+
+    let state: string;
+
+    const atLeastOneCommandIsRunning = unfinishedSyncCount !== 0 || asyncCount !== 0;
+
+    if (!this.isEnabled()) {
+      // If we are disabled but have unfinished commands, then we are "draining".
+      state = atLeastOneCommandIsRunning ? "draining" : "disabled";
+    } else {
+      // If we are enabled but have no unfinished commands, then we are "idle".
+      state = atLeastOneCommandIsRunning ? "running" : "idle";
+    }
+
+    this._sbStatus.text = `${state} Sync: ${unfinishedSyncCount} Async: ${asyncCount}`;
+    this._sbStatus.tooltip = `Run On Save: State: ${state}, Unfinished synchronous command count: ${unfinishedSyncCount}, Active asynchronous command count: ${asyncCount}`;
+    this._sbStatus.show();
   }
 
   public runCommands(document: Document): void {
@@ -222,7 +300,7 @@ class RunOnSaveExtension {
       this._outputChannel.clear();
     }
 
-    if (!this.isEnabled || this.commands.length === 0) {
+    if (!this.isEnabled() || this.commands.length === 0) {
       this.showOutputMessage();
       return;
     }
@@ -250,8 +328,12 @@ class RunOnSaveExtension {
       return;
     }
 
-    // build our commands by replacing parameters with values
-    const commands: Array<ICommand> = [];
+    const startMs = performance.now();
+    this.showOutputMessageIfDefined(this._config.message);
+
+    // A collection of promises that will be resolved when all commands for this document save have finished executing.
+    const finishPromises: Array<Promise<void>> = [];
+
     for (const cfg of commandConfigs) {
       let cmdStr = cfg.cmd;
 
@@ -295,16 +377,46 @@ class RunOnSaveExtension {
         );
       }
 
-      commands.push({
-        message: cfg.message,
-        messageAfter: cfg.messageAfter,
-        cmd: cmdStr,
-        isAsync: !!cfg.isAsync,
-        showElapsed: cfg.showElapsed,
-        autoShowOutputPanel: cfg.autoShowOutputPanel,
+      let finishCallback: () => void;
+      const finishPromise = new Promise<void>((resolve) => {
+        finishCallback = resolve;
       });
+      finishPromises.push(finishPromise);
+
+      const rc: runCommandConfig = {
+        cfg: {
+          ...cfg,
+          // Override with the command string that was processed with placeholders.
+          cmd: cmdStr,
+        },
+        document: document,
+        finishCallback: finishCallback,
+      };
+
+      if (rc.cfg.isAsync) {
+        // Immediately kick off the async command.
+        this._activeAsyncCommands++;
+        this._runCommand(rc).then(() => {
+          this._activeAsyncCommands--;
+          this.refreshStatus();
+        });
+        continue;
+      }
+
+      this._enqueueSyncCommand(rc);
     }
 
-    this._runCommands(commands, document);
+    // Show message and elapsed time after all commands have finished for the saved document or notebook.
+    // Note: this is fire-and-forget, allowing us to continue to process additional document saves.
+    Promise.allSettled(finishPromises).then(() => {
+      this.showOutputMessageIfDefined(this._config.messageAfter);
+
+      const totalElapsedMs = performance.now() - startMs;
+      this.showOutputMessageIfDefined(
+        this._config.showElapsed && `Total elapsed ms: ${totalElapsedMs}`,
+      );
+    });
   }
+
 }
+

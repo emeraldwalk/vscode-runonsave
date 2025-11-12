@@ -18,6 +18,9 @@ export interface ICommand extends IMessageConfig {
   cmd?: string;
   isAsync: boolean;
   autoShowOutputPanel?: "always" | "error" | "never";
+
+  // The UNIX signal to use when killing the process. Allowed values are `SIGTERM` (the default), `SIGINT`, or `SIGKILL`.
+  killSignal?: 'SIGTERM' | 'SIGINT' | 'SIGKILL';
 }
 
 export interface IConfig extends IMessageConfig {
