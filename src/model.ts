@@ -33,3 +33,11 @@ export interface IExecResult {
   statusCode: number,
   elapsedMs: number,
 }
+
+export interface RunCommandConfig {
+  cfg: ICommand;
+  // The modified saved document or notebook that triggered command execution.
+  document: Document;
+  // Callback to invoke when the command finishes execution (successfully or not).
+  finishCallback: () => void;
+}

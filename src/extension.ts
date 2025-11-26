@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { exec } from 'child_process';
-import type { ICommand, IConfig, IExecResult, Document } from './model';
+import type { ICommand, IConfig, IExecResult, Document, RunCommandConfig } from './model';
 
 const STATUS_BAR_ACTIVITY_ID = 'status.activity';
 const COMMAND_SHOW_OUTPUT_CHANNEL = 'extension.emeraldwalk.showOutputChannel';
@@ -41,20 +41,12 @@ export function activate(context: vscode.ExtensionContext): void {
   });
 }
 
-interface runCommandConfig {
-  cfg: ICommand;
-  // The modified saved document or notebook that triggered command execution.
-  document: Document;
-  // Callback to invoke when the command finishes execution (successfully or not).
-  finishCallback: () => void;
-}
-
 class RunOnSaveExtension implements vscode.Disposable {
   private _outputChannel: vscode.OutputChannel;
   private _context: vscode.ExtensionContext;
   private _config: IConfig;
   private _sbStatus?: vscode.StatusBarItem;
-  private _syncCommandQueue: Array<runCommandConfig> = [];
+  private _syncCommandQueue: Array<RunCommandConfig> = [];
   private _notifyWaitingSyncCommandRunner?: () => void;
   private _activeAsyncCommands: number = 0;
   private _commandAbortController = new AbortController();
@@ -81,7 +73,7 @@ class RunOnSaveExtension implements vscode.Disposable {
     this._outputChannel.show();
   }
 
-  private _enqueueSyncCommand(rc: runCommandConfig): void {
+  private _enqueueSyncCommand(rc: RunCommandConfig): void {
     this._syncCommandQueue.push(rc);
     this.refreshStatus();
     this._wakeSyncCommandRunner();
@@ -110,7 +102,7 @@ class RunOnSaveExtension implements vscode.Disposable {
     }
   }
 
-  private _onCmdComplete(rc: runCommandConfig, res: IExecResult): void {
+  private _onCmdComplete(rc: RunCommandConfig, res: IExecResult): void {
     this.showOutputMessageIfDefined(rc.cfg.messageAfter);
     this.showOutputMessageIfDefined(
       rc.cfg.showElapsed && `Elapsed ms: ${res.elapsedMs}`,
@@ -125,7 +117,7 @@ class RunOnSaveExtension implements vscode.Disposable {
 
   /** Invoke a command. */
   private async _runCommand(
-    rc: runCommandConfig,
+    rc: RunCommandConfig,
   ): Promise<void> {
     this.showOutputMessageIfDefined(rc.cfg.message);
 
@@ -143,7 +135,7 @@ class RunOnSaveExtension implements vscode.Disposable {
   }
 
   private _getExecPromise(
-    rc: runCommandConfig,
+    rc: RunCommandConfig,
   ): Promise<IExecResult> {
     return new Promise((resolve) => {
       const startMs = performance.now();
@@ -383,7 +375,7 @@ class RunOnSaveExtension implements vscode.Disposable {
       });
       finishPromises.push(finishPromise);
 
-      const rc: runCommandConfig = {
+      const rc: RunCommandConfig = {
         cfg: {
           ...cfg,
           // Override with the command string that was processed with placeholders.
