@@ -189,27 +189,27 @@ class RunOnSaveExtension implements vscode.Disposable {
     this._commandAbortController = new AbortController();
   }
 
-  public enable(): void {
+  public async enable(): Promise<void> {
     if (this.isEnabled()) {
       // Already enabled.
       return;
     }
 
-    this._context.globalState.update('isEnabled', true).then(() => {
-      // Start the synchronous command runner loop.
-      this.showOutputMessage();
-      this.refreshStatus();
-    });
+    await this._context.globalState.update('isEnabled', true);
+
+    // Start the synchronous command runner loop.
+    this.showOutputMessage();
+    this.refreshStatus();
   }
 
-  public disable(): void {
-    this._context.globalState.update('isEnabled', false).then(() => {
-      this.showOutputMessage("Disabling Run On Save. Aborting all running commands and purging queue.");
-      this._abortAllRunningCommands();
+  public async disable(): Promise<void> {
+    await this._context.globalState.update('isEnabled', false);
 
-      // Refresh the status bar.
-      this.refreshStatus();
-    });
+    this.showOutputMessage("Disabling Run On Save. Aborting all running commands and purging queue.");
+    this._abortAllRunningCommands();
+
+    // Refresh the status bar.
+    this.refreshStatus();
   }
 
   public isEnabled(): boolean {
