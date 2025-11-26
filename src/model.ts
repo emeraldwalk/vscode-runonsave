@@ -18,6 +18,9 @@ export interface ICommand extends IMessageConfig {
   cmd?: string;
   isAsync: boolean;
   autoShowOutputPanel?: "always" | "error" | "never";
+
+  // The UNIX signal to use when killing the process. Allowed values are `SIGTERM` (the default), `SIGINT`, or `SIGKILL`.
+  killSignal?: 'SIGTERM' | 'SIGINT' | 'SIGKILL';
 }
 
 export interface IConfig extends IMessageConfig {
@@ -29,4 +32,12 @@ export interface IConfig extends IMessageConfig {
 export interface IExecResult {
   statusCode: number,
   elapsedMs: number,
+}
+
+export interface RunCommandConfig {
+  cfg: ICommand;
+  // The modified saved document or notebook that triggered command execution.
+  document: Document;
+  // Callback to invoke when the command finishes execution (successfully or not).
+  finishCallback: () => void;
 }

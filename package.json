@@ -46,6 +46,10 @@
       {
         "command": "extension.emeraldwalk.disableRunOnSave",
         "title": "Run On Save: Disable"
+      },
+      {
+        "command": "extension.emeraldwalk.showOutputChannel",
+        "title": "Run On Save: Show Output Channel"
       }
     ],
     "configuration": {
@@ -122,6 +126,16 @@
                       "never",
                       "always",
                       "error"
+                    ]
+                  },
+                  "killSignal": {
+                    "type": "string",
+                    "description": "The UNIX signal to use when killing the process. Allowed values are 'SIGTERM' or 'SIGKILL'.",
+                    "default": "SIGTERM",
+                    "enum": [
+                      "SIGTERM",
+                      "SIGINT",
+                      "SIGKILL"
                     ]
                   }
                 }
