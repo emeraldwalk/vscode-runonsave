@@ -9,22 +9,23 @@ NOTE: Commands only get run when saving an existing file. Creating new files, an
 - Configure multiple commands that run when a file is saved
 - Regex pattern matching for files that trigger commands running
 - Synchronous and asynchronous command support
-  - Synchronous commands are executed one at a time in FIFO order.
-  - Asynchronous commands are executed immediately.
+  - Synchronous (sequential) commands are executed one at a time in FIFO order.
+  - Asynchronous (parallel) commands allow the next command to start before completing.
 
 ## `Run On Save Status` status bar
 
 The `Run On Save Status` status bar summarizes the extension's state and number of running commands. Clicking the status bar reveals the `Run On Save` output channel.
 
-The text in the status bar is of the format `<state> Sync: <num-sync> Async: <num-async>` with values:
+The text in the status bar is of the format `<state-icon> Q:<num-queued>,S:<num-sequential>,P:<num-parallel>` with values:
 
 - `<state>`:
-  - `idle` - extension is enabled with no commands running.
-  - `running` extension is enabled with at least one command is running.
-  - `draining` - extension is disabled with an unfinished sync and/or async command
-  - `disabled` - extension is disabled.
-- `<num-sync>` - the number of unfinished synchronous commands. One command will be executed at a time, and the remainder are queued.
-- `<num-async>` - the number of unfinished synchronous commands. Asynchronous commands are active processes.
+  - `Idle` - extension is enabled with no commands running.
+  - `Running` extension is enabled with at least one command is running.
+  - `Draining` - extension is disabled with an unfinished sync and/or async command
+  - `Disabled` - extension is disabled.
+- `<num-queued>` - the number of commands that have not yet been started.
+- `<num-sequential>` - the number of active sequential commands.
+- `<num-parallel>` - the number of active parallel (asynchronous) commands.
 
 Clicking the status bar item reveals the `Run On Save` output channel.
 

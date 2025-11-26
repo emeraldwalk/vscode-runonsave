@@ -46,8 +46,9 @@ class RunOnSaveExtension implements vscode.Disposable {
   private _context: vscode.ExtensionContext;
   private _config: IConfig;
   private _sbStatus?: vscode.StatusBarItem;
-  private _syncCommandQueue: Array<RunCommandConfig> = [];
-  private _notifyWaitingSyncCommandRunner?: () => void;
+  private _commandQueue: Array<RunCommandConfig> = [];
+  private _notifyWaitingCommandRunner?: () => void;
+  private _activeSyncCommands: number = 0;
   private _activeAsyncCommands: number = 0;
   private _commandAbortController = new AbortController();
   private _disposed: boolean = false;
@@ -57,7 +58,7 @@ class RunOnSaveExtension implements vscode.Disposable {
     this._outputChannel = vscode.window.createOutputChannel('Run On Save');
     this._context.subscriptions.push(this._outputChannel);
     this.loadConfig();
-    this._syncRunnerLoop(); // starts the synchronous command runner loop.
+    this._commandRunnerLoop(); // starts the synchronous command runner loop.
     this.refreshStatus();
   }
 
@@ -66,39 +67,51 @@ class RunOnSaveExtension implements vscode.Disposable {
     this._disposed = true; // Indicates that the runner loop should stop.
     this._abortAllRunningCommands();
     // In case the runner loop is waiting for a command, wake it so that it can stop.
-    this._wakeSyncCommandRunner();
+    this._wakeCommandRunner();
   }
 
   public showOutputChannel(): void {
     this._outputChannel.show();
   }
 
-  private _enqueueSyncCommand(rc: RunCommandConfig): void {
-    this._syncCommandQueue.push(rc);
+  private _enqueueCommand(rc: RunCommandConfig): void {
+    this._commandQueue.push(rc);
     this.refreshStatus();
-    this._wakeSyncCommandRunner();
+    this._wakeCommandRunner();
   }
 
   /**
-   * Loop that processes synchronous commands one at a time in FIFO order.
+   * Loop that processes commands in FIFO order.
    */
-  private async _syncRunnerLoop(): Promise<void> {
+  private async _commandRunnerLoop(): Promise<void> {
     while (!this._disposed) {
-      const cmd = this._syncCommandQueue.shift();
+      const cmd = this._commandQueue.shift();
       if (!cmd) {
-        const waitForNextSyncCommandPromise = new Promise<void>((resolve) => {
-          this._notifyWaitingSyncCommandRunner = resolve;
+        const waitForNextCommandPromise = new Promise<void>((resolve) => {
+          this._notifyWaitingCommandRunner = resolve;
         });
         this.refreshStatus();
         // Block loop until a command is added to the queue.
-        await waitForNextSyncCommandPromise;
+        await waitForNextCommandPromise;
         this.refreshStatus();
         continue;
       }
 
       this.refreshStatus();
-      await this._runCommand(cmd);
-      this.refreshStatus();
+      if (cmd.cfg.isAsync) {
+        this._activeAsyncCommands++;
+        this.refreshStatus();
+        this._runCommand(cmd).then(() => {
+          this._activeAsyncCommands--;
+          this.refreshStatus();
+        });
+      } else {
+        this._activeSyncCommands++;
+        this.refreshStatus();
+        await this._runCommand(cmd);
+        this._activeSyncCommands--;
+        this.refreshStatus();
+      }
     }
   }
 
@@ -172,14 +185,14 @@ class RunOnSaveExtension implements vscode.Disposable {
       : vscode.workspace.rootPath;
   }
 
-  private _wakeSyncCommandRunner(): void {
-    this._notifyWaitingSyncCommandRunner?.()
-    this._notifyWaitingSyncCommandRunner = undefined;
+  private _wakeCommandRunner(): void {
+    this._notifyWaitingCommandRunner?.()
+    this._notifyWaitingCommandRunner = undefined;
   }
 
   private _abortAllRunningCommands(): void {
     // Clear pending commands.
-    this._syncCommandQueue = [];
+    this._commandQueue = [];
 
     // Abort any existing commands.
     this._commandAbortController.abort();
@@ -260,17 +273,14 @@ class RunOnSaveExtension implements vscode.Disposable {
       this._context.subscriptions.push(this._sbStatus);
     }
 
-    let unfinishedSyncCount = this._syncCommandQueue.length;
-    if (this._notifyWaitingSyncCommandRunner === undefined && !this._disposed) {
-      // We are not disposed and the runner is not waiting for a command, so it must be running a command.
-      unfinishedSyncCount++;
-    }
+    let queuedCount = this._commandQueue.length;
     const asyncCount = this._activeAsyncCommands;
+    const syncCount = this._activeSyncCommands;
 
     let state: 'Draining' | 'Disabled' | 'Idle' | 'Running';
 
     const atLeastOneCommandIsRunning =
-      unfinishedSyncCount !== 0 || asyncCount !== 0;
+      queuedCount !== 0 || syncCount !== 0 || asyncCount !== 0;
 
     if (!this.isEnabled()) {
       // If we are disabled but have unfinished commands, then we are "draining".
@@ -280,8 +290,8 @@ class RunOnSaveExtension implements vscode.Disposable {
       state = atLeastOneCommandIsRunning ? 'Running' : 'Idle';
     }
 
-    const statsShort = `S:${unfinishedSyncCount},P:${asyncCount}`;
-    const statsLong = `Sequential: ${unfinishedSyncCount} Parallel: ${asyncCount}`;
+    const statsShort = `Q:${queuedCount},S:${syncCount},P:${asyncCount}`;
+    const statsLong = `Queued: ${queuedCount}, Sequential: ${queuedCount} Parallel: ${asyncCount}`;
 
     const text = {
       Draining: `$(clock) ${statsShort}`,
@@ -395,17 +405,7 @@ class RunOnSaveExtension implements vscode.Disposable {
         finishCallback,
       };
 
-      if (rc.cfg.isAsync) {
-        // Immediately kick off the async command.
-        this._activeAsyncCommands++;
-        this._runCommand(rc).then(() => {
-          this._activeAsyncCommands--;
-          this.refreshStatus();
-        });
-        continue;
-      }
-
-      this._enqueueSyncCommand(rc);
+      this._enqueueCommand(rc);
     }
 
     // Show message and elapsed time after all commands have finished for the saved document or notebook.
