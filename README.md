@@ -41,7 +41,7 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
   - `match` - a regex for matching which files to run commands on (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `notMatch` - a regex for matching which files **NOT** to run. Files that match this pattern take precedence over ones that match the `match` option (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `cmd` - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
-  - `isAsync` (optional) - defaults to false, meaning that the command wait in a FIFO queue while other synchronous commands are being processed one at a time. If true, next command will be run before this one finishes.
+  - `isAsync` (optional) - defaults to false, meaning that the command waits in a FIFO queue while other synchronous commands are being processed one at a time. If true, next command will be run before this one finishes.
   - `killSignal` (optional) - the UNIX signal to send when killing the process. Allowed values are `SIGTERM` (default), `SIGINT`, and `SIGKILL`.
   - `message` - Message to output before this command.
   - `messageAfter` - Message to output after this command has finished.

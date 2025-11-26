@@ -173,11 +173,8 @@ class RunOnSaveExtension implements vscode.Disposable {
   }
 
   private _wakeSyncCommandRunner(): void {
-    const notifyWaitingRunner = this._notifyWaitingSyncCommandRunner;
-    if (notifyWaitingRunner) {
-      this._notifyWaitingSyncCommandRunner = undefined;
-      notifyWaitingRunner();
-    }
+    this._notifyWaitingSyncCommandRunner?.()
+    this._notifyWaitingSyncCommandRunner = undefined;
   }
 
   private _abortAllRunningCommands(): void {
@@ -270,20 +267,33 @@ class RunOnSaveExtension implements vscode.Disposable {
     }
     const asyncCount = this._activeAsyncCommands;
 
-    let state: string;
+    let state: 'Draining' | 'Disabled' | 'Idle' | 'Running';
 
-    const atLeastOneCommandIsRunning = unfinishedSyncCount !== 0 || asyncCount !== 0;
+    const atLeastOneCommandIsRunning =
+      unfinishedSyncCount !== 0 || asyncCount !== 0;
 
     if (!this.isEnabled()) {
       // If we are disabled but have unfinished commands, then we are "draining".
-      state = atLeastOneCommandIsRunning ? "draining" : "disabled";
+      state = atLeastOneCommandIsRunning ? 'Draining' : 'Disabled';
     } else {
       // If we are enabled but have no unfinished commands, then we are "idle".
-      state = atLeastOneCommandIsRunning ? "running" : "idle";
+      state = atLeastOneCommandIsRunning ? 'Running' : 'Idle';
     }
 
-    this._sbStatus.text = `${state} Sync: ${unfinishedSyncCount} Async: ${asyncCount}`;
-    this._sbStatus.tooltip = `Run On Save: State: ${state}, Unfinished synchronous command count: ${unfinishedSyncCount}, Active asynchronous command count: ${asyncCount}`;
+    const statsShort = `S:${unfinishedSyncCount},P:${asyncCount}`;
+    const statsLong = `Sequential: ${unfinishedSyncCount} Parallel: ${asyncCount}`;
+
+    const text = {
+      Draining: `$(clock) ${statsShort}`,
+      Disabled: '$(save) $(circle-slash)',
+      Idle: `$(save) ${statsShort}`,
+      Running: `$(loading~spin) ${statsShort}`,
+    } as const;
+
+    this._sbStatus.text = text[state];
+    this._sbStatus.tooltip = `Run On Save: ${state}${
+      state === 'Disabled' ? '' : `, Remaining commands: ${statsLong}`
+    }`;
     this._sbStatus.show();
   }
 
@@ -381,8 +391,8 @@ class RunOnSaveExtension implements vscode.Disposable {
           // Override with the command string that was processed with placeholders.
           cmd: cmdStr,
         },
-        document: document,
-        finishCallback: finishCallback,
+        document,
+        finishCallback,
       };
 
       if (rc.cfg.isAsync) {
