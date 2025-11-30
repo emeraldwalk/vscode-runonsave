@@ -33,12 +33,14 @@ export function activate(context: vscode.ExtensionContext): void {
     extension.runCommands(document);
   });
 
-  vscode.workspace.onDidSaveNotebookDocument((document: vscode.NotebookDocument) => {
-    extension.runCommands(document);
-  });
+  vscode.workspace.onDidSaveNotebookDocument(
+    (document: vscode.NotebookDocument) => {
+      extension.runCommands(document);
+    },
+  );
 }
 
-class RunOnSaveExtension {
+export class RunOnSaveExtension {
   private _outputChannel: vscode.OutputChannel;
   private _context: vscode.ExtensionContext;
   private _config: IConfig;
@@ -217,7 +219,7 @@ class RunOnSaveExtension {
     return vscode.window.setStatusBarMessage(message);
   }
 
-  public runCommands(document: Document): void {
+  public runCommands(document: Document): Promise<void> {
     if (this.autoClearConsole) {
       this._outputChannel.clear();
     }
@@ -305,6 +307,6 @@ class RunOnSaveExtension {
       });
     }
 
-    this._runCommands(commands, document);
+    return this._runCommands(commands, document);
   }
 }
