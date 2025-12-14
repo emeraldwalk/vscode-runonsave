@@ -7,5 +7,5 @@
 !package.json
 !README.md
 !images/**
-!out/src/extension.js
+!out/**
 
