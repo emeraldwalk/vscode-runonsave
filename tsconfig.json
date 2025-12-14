@@ -1,16 +1,12 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
-        "outDir": "out",
-        "lib": [
-            "es6"
-        ],
-        "sourceMap": true,
-        "rootDir": "."
-    },
-    "exclude": [
-        "node_modules",
-        ".vscode-test"
-    ]
+  "extends": "./tsconfig.node20.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "outDir": "out",
+    "sourceMap": true,
+    "rootDir": "src",
+    "esModuleInterop": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "src/test"]
 }

@@ -1,0 +1,7 @@
+// Based on https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping#node-20
+{
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "target": "ES2023"
+  }
+}
