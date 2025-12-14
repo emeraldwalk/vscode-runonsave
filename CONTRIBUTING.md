@@ -24,7 +24,13 @@ Update version in `package.json`
 
 #### Pre-Release
 
-1. Determine the last pre-release version via `git tag --list | grep pre`
+1. Ensure on commit to be released (usually latest main)
+1. Determine the last pre-release version via:
+
+```sh
+git fetch --tags && git tag --list | grep pre
+```
+
 1. Determine the next patch version (e.g. 0.3.2 -> 0.3.3)
 1. Run the following script to do a pre-release:
 
