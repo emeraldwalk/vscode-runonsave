@@ -10,12 +10,7 @@ npm test
 
 ## Release Process
 
-### Setup
-
-Update version in `package.json`
-
-### Verification
-
+1. Ensure on commit to be released (usually latest main)
 1. Make sure all unit tests pass `npm test`
 1. Verify contents to publish `vsce ls`
 1. Package local `.vsix` for testing `npm run package:latest`
@@ -24,7 +19,6 @@ Update version in `package.json`
 
 #### Pre-Release
 
-1. Ensure on commit to be released (usually latest main)
 1. Determine the last pre-release version via:
 
 ```sh
