@@ -10,7 +10,9 @@ npm test
 
 ## Release Process
 
-1. Ensure on commit to be released (usually latest main)
+1. Ensure on commit to be released
+   - For pre-release, this should technically work from any commit since package.json isn't update, but typically will be latest `main`
+   - For release, this needs to be latest main since it will bump the package.json version
 1. Make sure all unit tests pass `npm test`
 1. Verify contents to publish `vsce ls`
 1. Package local `.vsix` for testing `npm run package:latest`
