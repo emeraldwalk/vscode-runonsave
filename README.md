@@ -56,10 +56,10 @@ The `match` and `notMatch` options expect RegEx patterns.
       {
         // Run whenever any file is saved
         "match": ".*",
-        "cmd": "echo '${fileBasename}' saved."
-      }
-    ]
-  }
+        "cmd": "echo '${fileBasename}' saved.",
+      },
+    ],
+  },
 }
 ```
 
@@ -72,10 +72,10 @@ The `match` and `notMatch` options expect RegEx patterns.
       {
         // Run whenever html, css, or js files are saved
         "match": "\\.(html|css|js)$",
-        "cmd": "echo '${fileBasename}' saved."
-      }
-    ]
-  }
+        "cmd": "echo '${fileBasename}' saved.",
+      },
+    ],
+  },
 }
 ```
 
@@ -90,10 +90,10 @@ The `match` and `notMatch` options expect RegEx patterns.
         // except for `exclude-me.js`
         "match": "\\.(html|css|js)$",
         "notMatch": "exclude-me\\.js$",
-        "cmd": "echo '${fileBasename}' saved."
-      }
-    ]
-  }
+        "cmd": "echo '${fileBasename}' saved.",
+      },
+    ],
+  },
 }
 ```
 
@@ -108,10 +108,10 @@ The `match` and `notMatch` options expect RegEx patterns.
         // .vscode directory
         "match": "\\.json$",
         "notMatch": "\\.vscode/.*$",
-        "cmd": "echo '${fileBasename}' saved."
-      }
-    ]
-  }
+        "cmd": "echo '${fileBasename}' saved.",
+      },
+    ],
+  },
 }
 ```
 
@@ -126,22 +126,22 @@ The `match` and `notMatch` options expect RegEx patterns.
         // This tells next command to run immediately after
         // this one starts instead of waiting for it to complete
         "isAsync": true,
-        "cmd": "echo 'I run for all files.'"
+        "cmd": "echo 'I run for all files.'",
       },
       {
         "match": "\\.txt$",
-        "cmd": "echo 'I am a .txt file ${file}.'"
+        "cmd": "echo 'I am a .txt file ${file}.'",
       },
       {
         "match": "\\.js$",
-        "cmd": "echo 'I am a .js file ${file}.'"
+        "cmd": "echo 'I am a .js file ${file}.'",
       },
       {
         "match": ".*",
-        "cmd": "echo 'I am ${env.USERNAME}.'"
-      }
-    ]
-  }
+        "cmd": "echo 'I am ${env.USERNAME}.'",
+      },
+    ],
+  },
 }
 ```
 
@@ -163,10 +163,10 @@ The `match` and `notMatch` options expect RegEx patterns.
         "message": "- 1. Start",
         "messageAfter": "- 1. Complete",
         // Show elapsed time for this cmd
-        "showElapsed": true
+        "showElapsed": true,
       },
       {
-        "message": "Message only"
+        "message": "Message only",
       },
       {
         "match": ".*",
@@ -175,10 +175,10 @@ The `match` and `notMatch` options expect RegEx patterns.
         "message": "- 2. Start",
         "messageAfter": "- 2. Complete",
         // Show elapsed time for this cmd
-        "showElapsed": true
-      }
-    ]
-  }
+        "showElapsed": true,
+      },
+    ],
+  },
 }
 ```
 
