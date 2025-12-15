@@ -4,6 +4,8 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+set -e
+
 vsce publish \
  --no-git-tag-version \
  --no-update-package-json \
