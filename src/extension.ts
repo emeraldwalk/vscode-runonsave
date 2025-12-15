@@ -164,11 +164,10 @@ export class RunOnSaveExtension {
   private _getWorkspaceFolderPath(uri: vscode.Uri) {
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
 
-    // NOTE: rootPath seems to be deprecated but seems like the best fallback so that
-    // single project workspaces still work. If I come up with a better option, I'll change it.
+    // If file doesn't belong to a workspace, use the file's directory
     return workspaceFolder
       ? workspaceFolder.uri.fsPath
-      : vscode.workspace.rootPath;
+      : path.dirname(uri.fsPath);
   }
 
   public get isEnabled(): boolean {
