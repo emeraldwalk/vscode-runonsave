@@ -32,7 +32,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src",
+    "format": "eslint src && prettier . --write",
     "test": "vitest",
     "package:latest": "npx vsce package -o releases/runonsave-latest.vsix"
   },
@@ -144,6 +144,8 @@
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.11.1",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "3.7.4",
     "typescript": "^5.6.2",
     "vitest": "^4.0.14"
   }

@@ -17,7 +17,7 @@ export interface ICommand extends IMessageConfig {
   notMatch?: string;
   cmd?: string;
   isAsync: boolean;
-  autoShowOutputPanel?: "always" | "error" | "never";
+  autoShowOutputPanel?: 'always' | 'error' | 'never';
 }
 
 export interface IConfig extends IMessageConfig {
@@ -27,6 +27,6 @@ export interface IConfig extends IMessageConfig {
 }
 
 export interface IExecResult {
-  statusCode: number,
-  elapsedMs: number,
+  statusCode: number;
+  elapsedMs: number;
 }

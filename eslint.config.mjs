@@ -1,5 +1,6 @@
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
 export default [
   {
@@ -30,4 +31,5 @@ export default [
       semi: 'warn',
     },
   },
+  eslintConfigPrettier,
 ];
