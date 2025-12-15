@@ -33,6 +33,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "format": "eslint src && prettier . --write",
+    "format:check": "eslint src && prettier . --check",
     "test": "vitest",
     "package:latest": "npx vsce package -o releases/runonsave-latest.vsix"
   },

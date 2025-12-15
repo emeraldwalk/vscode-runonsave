@@ -1,0 +1,21 @@
+name: Prettier Check
+
+on:
+    pull_request:
+        branches: [main] # Run on PRs targeting the main branch
+
+jobs:
+    prettier_check:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22" # Use your project's Node version
+            - name: Install dependencies
+              run: npm ci
+            - name: Run Eslint / Prettier check
+              # This step will fail if any files are unformatted
+              run: npm run format:check
