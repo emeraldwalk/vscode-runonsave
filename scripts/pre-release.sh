@@ -6,12 +6,15 @@ fi
 
 set -e
 
+# explicit version or minor/major/patch to increment
+version=$1
+tag=v$version-pre
+
 vsce publish \
+ --allow-star-activation \
  --no-git-tag-version \
- --no-update-package-json \
  --pre-release \
- $1
+ $version
 
-git tag v$1-pre
-
+git tag $tag
 git push --tags
