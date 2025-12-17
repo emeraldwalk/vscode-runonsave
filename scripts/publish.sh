@@ -26,5 +26,11 @@ vsce publish \
  --no-git-tag-version \
  $version
 
-git tag $tag
+git add package*.json
+git commit -m "$tag"
+git tag "$tag"
+
 git push --tags
+git push -u origin HEAD
+
+git checkout main
