@@ -8,7 +8,6 @@ set -e
 
 # explicit version or minor/major/patch to increment
 version=$1
-tag=v$version-pre
 
 vsce publish \
  --allow-star-activation \
@@ -16,5 +15,9 @@ vsce publish \
  --pre-release \
  $version
 
-git tag $tag
+# Read the actual version from package.json after publish
+new_version=$(node -p "require('./package.json').version")
+tag="v${new_version}-pre"
+
+git tag "$tag"
 git push --tags
