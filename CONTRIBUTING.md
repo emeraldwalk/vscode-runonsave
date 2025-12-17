@@ -23,6 +23,7 @@ npm test
 
 1. Main branch should stay on pre-release versions
 1. Checkout to latest commit on `main`
+1. Run `npm install`
 1. Run the following script to do a pre-release:
 
 ```sh
