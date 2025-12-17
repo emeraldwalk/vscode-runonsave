@@ -19,5 +19,8 @@ vsce publish \
 new_version=$(node -p "require('./package.json').version")
 tag="v${new_version}-pre"
 
+git commit -m "$tag"
 git tag "$tag"
+
 git push --tags
+git push
