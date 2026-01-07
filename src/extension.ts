@@ -2,7 +2,8 @@ import { exec } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import type { Document, ICommand, IConfig, IExecResult } from './model';
-type strReplaceSignature =
+type StringReplacer = Parameters<String['replace']>[1];
+type StringReplaceParams =
   | [RegExp, string]
   | [RegExp, (substring: string, ...args: any[]) => string];
 export function activate(context: vscode.ExtensionContext): void {
@@ -227,7 +228,7 @@ export class RunOnSaveExtension {
     return vscode.window.setStatusBarMessage(message);
   }
 
-  private getReplacements(document: Document): Array<strReplaceSignature> {
+  private _getReplacements(document: Document): Array<StringReplaceParams> {
     const extName = path.extname(document.uri.fsPath);
     const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
     const relativeFile = path.relative(
@@ -256,26 +257,17 @@ export class RunOnSaveExtension {
     ];
   }
 
-  private doReplacement(
-    s: string | null,
-    replacers: Array<strReplaceSignature>,
+  private _doReplacement(
+    text: string | null,
+    replacers: Array<StringReplaceParams>,
   ): string | null {
-    if (!s) {
-      return s;
+    if (!text) {
+      return text;
     }
-    for (const i in replacers) {
-      let searchValue = replacers[i][0];
-      let replacer = replacers[i][1];
-      // This silliness was necessary to convince typescript that I have satisfied
-      // string.replace's interface.
-      if (typeof replacer === 'string') {
-        s = s.replace(searchValue, replacer);
-      } else {
-        s = s.replace(searchValue, replacer);
-      }
-      console.log(s, i[0], i[1]);
+    for (const [searchValue, replacer] of replacers) {
+      text = text.replace(searchValue, replacer as StringReplacer);
     }
-    return s;
+    return text;
   }
   public runCommands(document: Document): Promise<void> {
     if (this.autoClearConsole) {
@@ -313,11 +305,11 @@ export class RunOnSaveExtension {
     // build our commands by replacing parameters with values
     const commands: Array<ICommand> = [];
     for (const cfg of commandConfigs) {
-      const replacements = this.getReplacements(document);
+      const replacements = this._getReplacements(document);
       commands.push({
-        message: this.doReplacement(cfg.message, replacements),
-        messageAfter: this.doReplacement(cfg.messageAfter, replacements),
-        cmd: this.doReplacement(cfg.cmd, replacements),
+        message: this._doReplacement(cfg.message, replacements),
+        messageAfter: this._doReplacement(cfg.messageAfter, replacements),
+        cmd: this._doReplacement(cfg.cmd, replacements),
         isAsync: !!cfg.isAsync,
         showElapsed: cfg.showElapsed,
         autoShowOutputPanel: cfg.autoShowOutputPanel,
