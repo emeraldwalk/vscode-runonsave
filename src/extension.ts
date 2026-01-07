@@ -313,16 +313,7 @@ export class RunOnSaveExtension {
     // build our commands by replacing parameters with values
     const commands: Array<ICommand> = [];
     for (const cfg of commandConfigs) {
-      let cmdStr = cfg.cmd;
-
       const replacements = this.getReplacements(document);
-      if (cmdStr) {
-        cmdStr = this.doReplacement(cmdStr, replacements);
-      }
-      if (cmdStr) {
-        cmdStr = this.doReplacement(cmdStr, replacements);
-      }
-
       commands.push({
         message: this.doReplacement(cfg.message, replacements),
         messageAfter: this.doReplacement(cfg.messageAfter, replacements),
