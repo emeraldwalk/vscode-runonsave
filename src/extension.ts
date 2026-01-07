@@ -1,8 +1,10 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
 import { exec } from 'child_process';
-import type { ICommand, IConfig, IExecResult, Document } from './model';
-
+import * as path from 'path';
+import * as vscode from 'vscode';
+import type { Document, ICommand, IConfig, IExecResult } from './model';
+type strReplaceSignature =
+  | [RegExp, string]
+  | [RegExp, (substring: string, ...args: any[]) => string];
 export function activate(context: vscode.ExtensionContext): void {
   const extension = new RunOnSaveExtension(context);
   extension.showOutputMessage();
@@ -225,6 +227,56 @@ export class RunOnSaveExtension {
     return vscode.window.setStatusBarMessage(message);
   }
 
+  private getReplacements(document: Document): Array<strReplaceSignature> {
+    const extName = path.extname(document.uri.fsPath);
+    const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
+    const relativeFile = path.relative(
+      workspaceFolderPath,
+      document.uri.fsPath,
+    );
+    return [
+      [/\${file}/g, `${document.uri.fsPath}`],
+      // DEPRECATED: workspaceFolder is more inline with vscode variables,
+      // but leaving old version in place for any users already using it.
+      [/\${workspaceRoot}/g, workspaceFolderPath],
+      [/\${workspaceFolder}/g, workspaceFolderPath],
+      [/\${fileBasename}/g, path.basename(document.uri.fsPath)],
+      [/\${fileDirname}/g, path.dirname(document.uri.fsPath)],
+      [/\${fileExtname}/g, extName],
+      [/\${fileBasenameNoExt}/g, path.basename(document.uri.fsPath, extName)],
+      [/\${relativeFile}/g, relativeFile],
+      [/\${cwd}/g, process.cwd()],
+      // replace environment variables ${env.Name}
+      [
+        /\${env\.([^}]+)}/g,
+        (sub: string, envName: string) => {
+          return process.env[envName];
+        },
+      ],
+    ];
+  }
+
+  private doReplacement(
+    s: string | null,
+    replacers: Array<strReplaceSignature>,
+  ): string | null {
+    if (!s) {
+      return s;
+    }
+    for (const i in replacers) {
+      let searchValue = replacers[i][0];
+      let replacer = replacers[i][1];
+      // This silliness was necessary to convince typescript that I have satisfied
+      // string.replace's interface.
+      if (typeof replacer === 'string') {
+        s = s.replace(searchValue, replacer);
+      } else {
+        s = s.replace(searchValue, replacer);
+      }
+      console.log(s, i[0], i[1]);
+    }
+    return s;
+  }
   public runCommands(document: Document): Promise<void> {
     if (this.autoClearConsole) {
       this._outputChannel.clear();
@@ -263,50 +315,18 @@ export class RunOnSaveExtension {
     for (const cfg of commandConfigs) {
       let cmdStr = cfg.cmd;
 
-      const extName = path.extname(document.uri.fsPath);
-      const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
-      const relativeFile = path.relative(
-        workspaceFolderPath,
-        document.uri.fsPath,
-      );
-
+      const replacements = this.getReplacements(document);
       if (cmdStr) {
-        cmdStr = cmdStr.replace(/\${file}/g, `${document.uri.fsPath}`);
-
-        // DEPRECATED: workspaceFolder is more inline with vscode variables,
-        // but leaving old version in place for any users already using it.
-        cmdStr = cmdStr.replace(/\${workspaceRoot}/g, workspaceFolderPath);
-
-        cmdStr = cmdStr.replace(/\${workspaceFolder}/g, workspaceFolderPath);
-        cmdStr = cmdStr.replace(
-          /\${fileBasename}/g,
-          path.basename(document.uri.fsPath),
-        );
-        cmdStr = cmdStr.replace(
-          /\${fileDirname}/g,
-          path.dirname(document.uri.fsPath),
-        );
-        cmdStr = cmdStr.replace(/\${fileExtname}/g, extName);
-        cmdStr = cmdStr.replace(
-          /\${fileBasenameNoExt}/g,
-          path.basename(document.uri.fsPath, extName),
-        );
-        cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
-        cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
-
-        // replace environment variables ${env.Name}
-        cmdStr = cmdStr.replace(
-          /\${env\.([^}]+)}/g,
-          (sub: string, envName: string) => {
-            return process.env[envName];
-          },
-        );
+        cmdStr = this.doReplacement(cmdStr, replacements);
+      }
+      if (cmdStr) {
+        cmdStr = this.doReplacement(cmdStr, replacements);
       }
 
       commands.push({
-        message: cfg.message,
-        messageAfter: cfg.messageAfter,
-        cmd: cmdStr,
+        message: this.doReplacement(cfg.message, replacements),
+        messageAfter: this.doReplacement(cfg.messageAfter, replacements),
+        cmd: this.doReplacement(cfg.cmd, replacements),
         isAsync: !!cfg.isAsync,
         showElapsed: cfg.showElapsed,
         autoShowOutputPanel: cfg.autoShowOutputPanel,

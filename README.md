@@ -24,8 +24,8 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
   - `notMatch` - a regex for matching which files **NOT** to run. Files that match this pattern take precedence over ones that match the `match` option (see [Notes on RegEx Options](#notes-on-regex-options)).
   - `cmd` - command to run. Can include parameters that will be replaced at runtime (see Placeholder Tokens section below).
   - `isAsync` (optional) - defaults to false. If true, next command will be run before this one finishes.
-  - `message` - Message to output before this command.
-  - `messageAfter` - Message to output after this command has finished.
+  - `message` - Message to output before this command. Can also include placeholders.
+  - `messageAfter` - Message to output after this command has finished. Can also include placeholders.
   - `showElapsed` - Show total elapsed time after this command.
   - `autoShowOutputPanel` - Automatically shows the output panel:
     - `never` - Never changes the output panel visibility (default).
@@ -196,7 +196,7 @@ The following commands are exposed in the command palette:
 
 ## Placeholder Tokens
 
-Commands support placeholders similar to tasks.json.
+Commands and messages support placeholders similar to tasks.json.
 
 - ~~`${workspaceRoot}`~~: DEPRECATED use `${workspaceFolder}` instead
 - `${workspaceFolder}`: the path of the workspace folder of the saved file
