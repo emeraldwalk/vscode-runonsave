@@ -36,13 +36,13 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
 
 The `match` and `notMatch` options expect RegEx patterns.
 
-- The pattern will be run against the abolute file path. This means you usually don't want to start the pattern with `^` unless you are putting a full pattern to match the abolute path.
+- The pattern will be run against the absolute file path. This means you usually don't want to start the pattern with `^` unless you are putting a full pattern to match the absolute path.
 
-  e.g. Use `"match": "somefile\\.txt$"` instead of `"match": "^somefile\\.txt$"` if you are targetting `somefile.txt` in your workspace.
+  e.g. Use `"match": "somefile\\.txt$"` instead of `"match": "^somefile\\.txt$"` if you are targeting `somefile.txt` in your workspace.
 
 - Since settings are defined in `json`, backslashes have to be double escaped.
 
-  e.g. If you were targetting a file path on a Windows system, you'd have to escape `\` once because it's a RegEx and a 2nd time since you are in a `json` string:
+  e.g. If you were targeting a file path on a Windows system, you'd have to escape `\` once because it's a RegEx and a 2nd time since you are in a `json` string:
   `"match": "some\\\\folder\\\\.*"`
 
 ### Sample Configurations
@@ -153,7 +153,7 @@ The `match` and `notMatch` options expect RegEx patterns.
     // Messages to show before & after all commands
     "message": "*** All Start ***",
     "messageAfter": "*** All Complete ***",
-    // Show elappsed time for all commands
+    // Show elapsed time for all commands
     "showElapsed": true,
     "commands": [
       {
@@ -184,7 +184,7 @@ The `match` and `notMatch` options expect RegEx patterns.
 
 ## Output of the commands
 
-Please see the output in Output window and then switch the right side drop down to "Run On Save" to see the ouput of the commands stdout
+Please see the output in Output window and then switch the right side drop down to "Run On Save" to see the output of the commands stdout
 
 ## Commands
 
