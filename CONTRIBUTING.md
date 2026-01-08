@@ -11,13 +11,21 @@ npm test
 ## Release Process
 
 1. Ensure on commit to be released
-   - For pre-release, this should technically work from any commit since package.json isn't update, but typically will be latest `main`
-   - For release, this needs to be latest main since it will bump the package.json version
+   - For pre-release, this should be the latest `main` since `package.json` version will be updated
+   - For release, this will be a previously released pre-release tag. The version will not be updated in the `main` branch, only in the newly created release branch
 1. Make sure all unit tests pass `npm test`
 1. Verify contents to publish `vsce ls`
 1. Package local `.vsix` for testing `npm run package:latest`
 
 ### Publishing
+
+To verify auth token still works, run:
+
+```sh
+npx vsce login <publisher>
+```
+
+When prompted for PAT, can copy $VSCE_PAT value. If it still works, we're good, otherwise need to generate new one in Azure DevOps.
 
 #### Pre-Release
 
