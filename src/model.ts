@@ -34,4 +34,4 @@ export interface IExecResult {
 export type StringReplacer = Parameters<String['replace']>[1];
 export type StringReplaceParams =
   | [RegExp, string]
-  | [RegExp, (substring: string, ...args: any[]) => string];
+  | [RegExp, (substring: string, envName: string) => string];

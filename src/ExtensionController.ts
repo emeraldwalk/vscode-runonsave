@@ -1,14 +1,11 @@
 import { exec } from 'child_process';
-import * as path from 'path';
 import * as vscode from 'vscode';
-import type {
-  Document,
-  ICommand,
-  IConfig,
-  IExecResult,
-  StringReplaceParams,
-  StringReplacer,
-} from './model';
+import type { Document, ICommand, IConfig, IExecResult } from './model';
+import {
+  doReplacement,
+  getReplacements,
+  getWorkspaceFolderPath,
+} from './utils';
 
 export class ExtensionController {
   private _outputChannel: vscode.OutputChannel;
@@ -90,19 +87,6 @@ export class ExtensionController {
     }
   }
 
-  private _doReplacement(
-    text: string | null,
-    replacers: Array<StringReplaceParams>,
-  ): string | null {
-    if (!text) {
-      return text;
-    }
-    for (const [searchValue, replacer] of replacers) {
-      text = text.replace(searchValue, replacer as StringReplacer);
-    }
-    return text;
-  }
-
   private _getExecPromise(
     cfg: ICommand,
     document: Document,
@@ -133,46 +117,8 @@ export class ExtensionController {
   } {
     return {
       shell: this.shell,
-      cwd: this._getWorkspaceFolderPath(document.uri),
+      cwd: getWorkspaceFolderPath(document.uri),
     };
-  }
-
-  private _getReplacements(document: Document): Array<StringReplaceParams> {
-    const extName = path.extname(document.uri.fsPath);
-    const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
-    const relativeFile = path.relative(
-      workspaceFolderPath,
-      document.uri.fsPath,
-    );
-    return [
-      [/\${file}/g, `${document.uri.fsPath}`],
-      // DEPRECATED: workspaceFolder is more inline with vscode variables,
-      // but leaving old version in place for any users already using it.
-      [/\${workspaceRoot}/g, workspaceFolderPath],
-      [/\${workspaceFolder}/g, workspaceFolderPath],
-      [/\${fileBasename}/g, path.basename(document.uri.fsPath)],
-      [/\${fileDirname}/g, path.dirname(document.uri.fsPath)],
-      [/\${fileExtname}/g, extName],
-      [/\${fileBasenameNoExt}/g, path.basename(document.uri.fsPath, extName)],
-      [/\${relativeFile}/g, relativeFile],
-      [/\${cwd}/g, process.cwd()],
-      // replace environment variables ${env.Name}
-      [
-        /\${env\.([^}]+)}/g,
-        (sub: string, envName: string) => {
-          return process.env[envName];
-        },
-      ],
-    ];
-  }
-
-  private _getWorkspaceFolderPath(uri: vscode.Uri) {
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
-
-    // If file doesn't belong to a workspace, use the file's directory
-    return workspaceFolder
-      ? workspaceFolder.uri.fsPath
-      : path.dirname(uri.fsPath);
   }
 
   public get isEnabled(): boolean {
@@ -266,11 +212,11 @@ export class ExtensionController {
     // build our commands by replacing parameters with values
     const commands: Array<ICommand> = [];
     for (const cfg of commandConfigs) {
-      const replacements = this._getReplacements(document);
+      const replacements = getReplacements(document);
       commands.push({
-        message: this._doReplacement(cfg.message, replacements),
-        messageAfter: this._doReplacement(cfg.messageAfter, replacements),
-        cmd: this._doReplacement(cfg.cmd, replacements),
+        message: doReplacement(cfg.message, replacements),
+        messageAfter: doReplacement(cfg.messageAfter, replacements),
+        cmd: doReplacement(cfg.cmd, replacements),
         isAsync: !!cfg.isAsync,
         showElapsed: cfg.showElapsed,
         autoShowOutputPanel: cfg.autoShowOutputPanel,
