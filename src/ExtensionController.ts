@@ -6,16 +6,22 @@ import {
   getReplacements,
   getWorkspaceFolderPath,
 } from './utils';
+import { SaveTracker } from './SaveTracker';
 
 export class ExtensionController {
   private _outputChannel: vscode.OutputChannel;
   private _context: vscode.ExtensionContext;
   private _config: IConfig;
+  private _saveTracker: SaveTracker;
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
     this._outputChannel = vscode.window.createOutputChannel('Run On Save');
     this.loadConfig();
+    this._saveTracker = new SaveTracker(
+      this.runCommands.bind(this),
+      () => this.ignoreUnchangedFiles,
+    );
   }
 
   /** Recursive call to run commands. */
@@ -137,8 +143,26 @@ export class ExtensionController {
     return !!this._config.autoClearConsole;
   }
 
+  public get ignoreUnchangedFiles(): boolean {
+    return !!this._config.ignoreUnchangedFiles;
+  }
+
   public get commands(): Array<ICommand> {
     return this._config.commands || [];
+  }
+
+  /**
+   * Handle a save for the given Document.
+   */
+  public onDidSave(document: Document): void {
+    this._saveTracker.onDidSave(document);
+  }
+
+  /**
+   * Enqueue a save for the given Document.
+   */
+  public onWillSave(document: Document): void {
+    this._saveTracker.onWillSave(document);
   }
 
   public loadConfig(): void {
