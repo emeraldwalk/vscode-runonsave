@@ -30,3 +30,8 @@ export interface IExecResult {
   statusCode: number;
   elapsedMs: number;
 }
+
+export type StringReplacer = Parameters<String['replace']>[1];
+export type StringReplaceParams =
+  | [RegExp, string]
+  | [RegExp, (substring: string, ...args: any[]) => string];

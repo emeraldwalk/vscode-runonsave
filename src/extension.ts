@@ -1,11 +1,15 @@
 import { exec } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import type { Document, ICommand, IConfig, IExecResult } from './model';
-type StringReplacer = Parameters<String['replace']>[1];
-type StringReplaceParams =
-  | [RegExp, string]
-  | [RegExp, (substring: string, ...args: any[]) => string];
+import type {
+  Document,
+  ICommand,
+  IConfig,
+  IExecResult,
+  StringReplaceParams,
+  StringReplacer,
+} from './model';
+
 export function activate(context: vscode.ExtensionContext): void {
   const extension = new RunOnSaveExtension(context);
   extension.showOutputMessage();
@@ -130,6 +134,19 @@ export class RunOnSaveExtension {
     }
   }
 
+  private _doReplacement(
+    text: string | null,
+    replacers: Array<StringReplaceParams>,
+  ): string | null {
+    if (!text) {
+      return text;
+    }
+    for (const [searchValue, replacer] of replacers) {
+      text = text.replace(searchValue, replacer as StringReplacer);
+    }
+    return text;
+  }
+
   private _getExecPromise(
     cfg: ICommand,
     document: Document,
@@ -162,6 +179,35 @@ export class RunOnSaveExtension {
       shell: this.shell,
       cwd: this._getWorkspaceFolderPath(document.uri),
     };
+  }
+
+  private _getReplacements(document: Document): Array<StringReplaceParams> {
+    const extName = path.extname(document.uri.fsPath);
+    const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
+    const relativeFile = path.relative(
+      workspaceFolderPath,
+      document.uri.fsPath,
+    );
+    return [
+      [/\${file}/g, `${document.uri.fsPath}`],
+      // DEPRECATED: workspaceFolder is more inline with vscode variables,
+      // but leaving old version in place for any users already using it.
+      [/\${workspaceRoot}/g, workspaceFolderPath],
+      [/\${workspaceFolder}/g, workspaceFolderPath],
+      [/\${fileBasename}/g, path.basename(document.uri.fsPath)],
+      [/\${fileDirname}/g, path.dirname(document.uri.fsPath)],
+      [/\${fileExtname}/g, extName],
+      [/\${fileBasenameNoExt}/g, path.basename(document.uri.fsPath, extName)],
+      [/\${relativeFile}/g, relativeFile],
+      [/\${cwd}/g, process.cwd()],
+      // replace environment variables ${env.Name}
+      [
+        /\${env\.([^}]+)}/g,
+        (sub: string, envName: string) => {
+          return process.env[envName];
+        },
+      ],
+    ];
   }
 
   private _getWorkspaceFolderPath(uri: vscode.Uri) {
@@ -228,47 +274,6 @@ export class RunOnSaveExtension {
     return vscode.window.setStatusBarMessage(message);
   }
 
-  private _getReplacements(document: Document): Array<StringReplaceParams> {
-    const extName = path.extname(document.uri.fsPath);
-    const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
-    const relativeFile = path.relative(
-      workspaceFolderPath,
-      document.uri.fsPath,
-    );
-    return [
-      [/\${file}/g, `${document.uri.fsPath}`],
-      // DEPRECATED: workspaceFolder is more inline with vscode variables,
-      // but leaving old version in place for any users already using it.
-      [/\${workspaceRoot}/g, workspaceFolderPath],
-      [/\${workspaceFolder}/g, workspaceFolderPath],
-      [/\${fileBasename}/g, path.basename(document.uri.fsPath)],
-      [/\${fileDirname}/g, path.dirname(document.uri.fsPath)],
-      [/\${fileExtname}/g, extName],
-      [/\${fileBasenameNoExt}/g, path.basename(document.uri.fsPath, extName)],
-      [/\${relativeFile}/g, relativeFile],
-      [/\${cwd}/g, process.cwd()],
-      // replace environment variables ${env.Name}
-      [
-        /\${env\.([^}]+)}/g,
-        (sub: string, envName: string) => {
-          return process.env[envName];
-        },
-      ],
-    ];
-  }
-
-  private _doReplacement(
-    text: string | null,
-    replacers: Array<StringReplaceParams>,
-  ): string | null {
-    if (!text) {
-      return text;
-    }
-    for (const [searchValue, replacer] of replacers) {
-      text = text.replace(searchValue, replacer as StringReplacer);
-    }
-    return text;
-  }
   public runCommands(document: Document): Promise<void> {
     if (this.autoClearConsole) {
       this._outputChannel.clear();
