@@ -16,3 +16,4 @@ Summarize changes this PR introduces.
 
 - [ ] Did you update any relevant docs / samples?
 - [ ] Did you include details on how to test your changes?
+- [ ] Did you run `npm test` and verify all tests pass?

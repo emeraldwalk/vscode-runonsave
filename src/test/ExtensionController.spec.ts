@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { expect, it, vi } from 'vitest';
 import { exec } from 'child_process';
-import { RunOnSaveExtension } from '../extension';
+import { ExtensionController } from '../ExtensionController';
 import {
   MockChildProcess,
   createUri,
@@ -196,7 +196,7 @@ it.each([
       return new MockChildProcess(promise);
     });
 
-    const instance = new RunOnSaveExtension(context);
+    const instance = new ExtensionController(context);
 
     await Promise.all(docs.map((doc) => instance.runCommands(doc)));
 
