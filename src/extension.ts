@@ -1,8 +1,11 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
 import { exec } from 'child_process';
-import type { ICommand, IConfig, IExecResult, Document } from './model';
-
+import * as path from 'path';
+import * as vscode from 'vscode';
+import type { Document, ICommand, IConfig, IExecResult } from './model';
+type StringReplacer = Parameters<String['replace']>[1];
+type StringReplaceParams =
+  | [RegExp, string]
+  | [RegExp, (substring: string, ...args: any[]) => string];
 export function activate(context: vscode.ExtensionContext): void {
   const extension = new RunOnSaveExtension(context);
   extension.showOutputMessage();
@@ -225,6 +228,47 @@ export class RunOnSaveExtension {
     return vscode.window.setStatusBarMessage(message);
   }
 
+  private _getReplacements(document: Document): Array<StringReplaceParams> {
+    const extName = path.extname(document.uri.fsPath);
+    const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
+    const relativeFile = path.relative(
+      workspaceFolderPath,
+      document.uri.fsPath,
+    );
+    return [
+      [/\${file}/g, `${document.uri.fsPath}`],
+      // DEPRECATED: workspaceFolder is more inline with vscode variables,
+      // but leaving old version in place for any users already using it.
+      [/\${workspaceRoot}/g, workspaceFolderPath],
+      [/\${workspaceFolder}/g, workspaceFolderPath],
+      [/\${fileBasename}/g, path.basename(document.uri.fsPath)],
+      [/\${fileDirname}/g, path.dirname(document.uri.fsPath)],
+      [/\${fileExtname}/g, extName],
+      [/\${fileBasenameNoExt}/g, path.basename(document.uri.fsPath, extName)],
+      [/\${relativeFile}/g, relativeFile],
+      [/\${cwd}/g, process.cwd()],
+      // replace environment variables ${env.Name}
+      [
+        /\${env\.([^}]+)}/g,
+        (sub: string, envName: string) => {
+          return process.env[envName];
+        },
+      ],
+    ];
+  }
+
+  private _doReplacement(
+    text: string | null,
+    replacers: Array<StringReplaceParams>,
+  ): string | null {
+    if (!text) {
+      return text;
+    }
+    for (const [searchValue, replacer] of replacers) {
+      text = text.replace(searchValue, replacer as StringReplacer);
+    }
+    return text;
+  }
   public runCommands(document: Document): Promise<void> {
     if (this.autoClearConsole) {
       this._outputChannel.clear();
@@ -261,52 +305,11 @@ export class RunOnSaveExtension {
     // build our commands by replacing parameters with values
     const commands: Array<ICommand> = [];
     for (const cfg of commandConfigs) {
-      let cmdStr = cfg.cmd;
-
-      const extName = path.extname(document.uri.fsPath);
-      const workspaceFolderPath = this._getWorkspaceFolderPath(document.uri);
-      const relativeFile = path.relative(
-        workspaceFolderPath,
-        document.uri.fsPath,
-      );
-
-      if (cmdStr) {
-        cmdStr = cmdStr.replace(/\${file}/g, `${document.uri.fsPath}`);
-
-        // DEPRECATED: workspaceFolder is more inline with vscode variables,
-        // but leaving old version in place for any users already using it.
-        cmdStr = cmdStr.replace(/\${workspaceRoot}/g, workspaceFolderPath);
-
-        cmdStr = cmdStr.replace(/\${workspaceFolder}/g, workspaceFolderPath);
-        cmdStr = cmdStr.replace(
-          /\${fileBasename}/g,
-          path.basename(document.uri.fsPath),
-        );
-        cmdStr = cmdStr.replace(
-          /\${fileDirname}/g,
-          path.dirname(document.uri.fsPath),
-        );
-        cmdStr = cmdStr.replace(/\${fileExtname}/g, extName);
-        cmdStr = cmdStr.replace(
-          /\${fileBasenameNoExt}/g,
-          path.basename(document.uri.fsPath, extName),
-        );
-        cmdStr = cmdStr.replace(/\${relativeFile}/g, relativeFile);
-        cmdStr = cmdStr.replace(/\${cwd}/g, process.cwd());
-
-        // replace environment variables ${env.Name}
-        cmdStr = cmdStr.replace(
-          /\${env\.([^}]+)}/g,
-          (sub: string, envName: string) => {
-            return process.env[envName];
-          },
-        );
-      }
-
+      const replacements = this._getReplacements(document);
       commands.push({
-        message: cfg.message,
-        messageAfter: cfg.messageAfter,
-        cmd: cmdStr,
+        message: this._doReplacement(cfg.message, replacements),
+        messageAfter: this._doReplacement(cfg.messageAfter, replacements),
+        cmd: this._doReplacement(cfg.cmd, replacements),
         isAsync: !!cfg.isAsync,
         showElapsed: cfg.showElapsed,
         autoShowOutputPanel: cfg.autoShowOutputPanel,
