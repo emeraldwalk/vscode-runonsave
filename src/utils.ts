@@ -21,24 +21,22 @@ export function doReplacement(
 }
 
 /**
- * Get the list of replacements for a given document.
+ * Get the list of replacements for a given Uri.
  */
-export function getReplacements(
-  document: Document,
-): Array<StringReplaceParams> {
-  const extName = path.extname(document.uri.fsPath);
-  const workspaceFolderPath = getWorkspaceFolderPath(document.uri);
-  const relativeFile = path.relative(workspaceFolderPath, document.uri.fsPath);
+export function getReplacements(uri: vscode.Uri): Array<StringReplaceParams> {
+  const extName = path.extname(uri.fsPath);
+  const workspaceFolderPath = getWorkspaceFolderPath(uri);
+  const relativeFile = path.relative(workspaceFolderPath, uri.fsPath);
   return [
-    [/\${file}/g, `${document.uri.fsPath}`],
+    [/\${file}/g, `${uri.fsPath}`],
     // DEPRECATED: workspaceFolder is more inline with vscode variables,
     // but leaving old version in place for any users already using it.
     [/\${workspaceRoot}/g, workspaceFolderPath],
     [/\${workspaceFolder}/g, workspaceFolderPath],
-    [/\${fileBasename}/g, path.basename(document.uri.fsPath)],
-    [/\${fileDirname}/g, path.dirname(document.uri.fsPath)],
+    [/\${fileBasename}/g, path.basename(uri.fsPath)],
+    [/\${fileDirname}/g, path.dirname(uri.fsPath)],
     [/\${fileExtname}/g, extName],
-    [/\${fileBasenameNoExt}/g, path.basename(document.uri.fsPath, extName)],
+    [/\${fileBasenameNoExt}/g, path.basename(uri.fsPath, extName)],
     [/\${relativeFile}/g, relativeFile],
     [/\${cwd}/g, process.cwd()],
     // replace environment variables ${env.Name}

@@ -212,7 +212,7 @@ export class ExtensionController {
     // build our commands by replacing parameters with values
     const commands: Array<ICommand> = [];
     for (const cfg of commandConfigs) {
-      const replacements = getReplacements(document);
+      const replacements = getReplacements(document.uri);
       commands.push({
         message: doReplacement(cfg.message, replacements),
         messageAfter: doReplacement(cfg.messageAfter, replacements),
