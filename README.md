@@ -16,6 +16,7 @@ Add "emeraldwalk.runonsave" configuration to user or workspace settings.
 
 - `shell` - (optional) shell path to be used with child_process.exec options that runs commands.
 - `autoClearConsole` - (optional) clear VSCode output console every time commands run. Defaults to false.
+- `ignoreUnchangedFiles` - (optional) ignore files that have not changed since the last save. Defaults to false.
 - `message` - Message to output before all commands.
 - `messageAfter` - Message to output after all commands have finished.
 - `showElapsed` - Show total elapsed time after all commands have finished.

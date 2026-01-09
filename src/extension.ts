@@ -34,13 +34,25 @@ export function activate(context: vscode.ExtensionContext): void {
     },
   );
 
+  vscode.workspace.onWillSaveTextDocument(
+    (event: vscode.TextDocumentWillSaveEvent) => {
+      extension.onWillSave(event.document);
+    },
+  );
+
   vscode.workspace.onDidSaveTextDocument((document: vscode.TextDocument) => {
-    extension.runCommands(document);
+    extension.onDidSave(document);
   });
 
+  vscode.workspace.onWillSaveNotebookDocument(
+    (event: vscode.NotebookDocumentWillSaveEvent) => {
+      extension.onWillSave(event.notebook);
+    },
+  );
+
   vscode.workspace.onDidSaveNotebookDocument(
-    (document: vscode.NotebookDocument) => {
-      extension.runCommands(document);
+    (notebookDocument: vscode.NotebookDocument) => {
+      extension.onDidSave(notebookDocument);
     },
   );
 }

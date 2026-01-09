@@ -64,6 +64,11 @@
               "description": "Automatically clear the console on each save before running commands.",
               "default": false
             },
+            "ignoreUnchangedFiles": {
+              "type": "boolean",
+              "description": "Ignore files that have not changed since the last save.",
+              "default": false
+            },
             "shell": {
               "type": "string",
               "description": "Shell to execute the command with (gets passed to child_process.exec as an options arg. e.g. child_process(cmd, { shell })."

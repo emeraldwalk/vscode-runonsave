@@ -43,9 +43,13 @@ export class MockChildProcess extends ChildProcess {
 }
 
 /** Create a mock Document */
-export function createDocument(fsPathOrUri: string | vscode.Uri): Document {
+export function createDocument(
+  fsPathOrUri: string | vscode.Uri,
+  isDirty = false,
+): Document {
   return {
     uri: ensureUri(fsPathOrUri),
+    isDirty,
   } as Document;
 }
 

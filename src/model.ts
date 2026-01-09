@@ -6,6 +6,8 @@ import * as vscode from 'vscode';
  */
 export type Document = vscode.TextDocument | vscode.NotebookDocument;
 
+export type UriString = string;
+
 export interface IMessageConfig {
   message?: string;
   messageAfter?: string;
@@ -23,6 +25,7 @@ export interface ICommand extends IMessageConfig {
 export interface IConfig extends IMessageConfig {
   shell: string;
   autoClearConsole: boolean;
+  ignoreUnchangedFiles: boolean;
   commands: Array<ICommand>;
 }
 
