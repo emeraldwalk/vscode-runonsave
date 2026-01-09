@@ -41,7 +41,7 @@ export class SaveTracker {
    * Handle a save for the given Document.
    */
   public onDidSave(document: Document): void {
-    const prevCount = this._pendingSaveMap.get(document.uri.fsPath) ?? 0;
+    const prevCount = this.getPendingSaveCount(document.uri);
 
     if (prevCount > 1) {
       this._pendingSaveMap.set(document.uri.fsPath, prevCount - 1);
