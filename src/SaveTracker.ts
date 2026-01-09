@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import type { Document, UriString } from './model';
 
 /**
@@ -6,15 +7,22 @@ import type { Document, UriString } from './model';
  */
 export class SaveTracker {
   private _pendingSaveMap = new Map<UriString, number>();
+  private _getIgnoreUnchangedFiles: () => boolean;
   private _runner: (document: Document) => void;
-  private _ignoreUnchangedFiles: () => boolean;
 
   constructor(
     runner: (document: Document) => void,
-    ignoreUnchangedFiles: () => boolean,
+    getIgnoreUnchangedFiles: () => boolean,
   ) {
     this._runner = runner;
-    this._ignoreUnchangedFiles = ignoreUnchangedFiles;
+    this._getIgnoreUnchangedFiles = getIgnoreUnchangedFiles;
+  }
+
+  /**
+   * Get the number of pending saves for a given URI.
+   */
+  public getPendingSaveCount(uri: vscode.Uri): number {
+    return this._pendingSaveMap.get(uri.fsPath) ?? 0;
   }
 
   /**
@@ -42,7 +50,7 @@ export class SaveTracker {
     }
 
     const isUnchanged = prevCount <= 0;
-    if (isUnchanged && this._ignoreUnchangedFiles()) {
+    if (isUnchanged && this._getIgnoreUnchangedFiles()) {
       return;
     }
 
